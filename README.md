@@ -7,6 +7,15 @@ combines it with the prototype's structure, the complete menu (**Sweets,
 Savory Items, and Beverages**), a shopping cart, a feedback board,
 Google Maps, and CRUD operations backed by PostgreSQL.
 
+## Run the project using VSCode
+
+clone repository: git clone <url>
+
+Install dependencies: npm install
+
+Run the app: npm run dev
+
+
 ## User Review & Key Decisions
 
 > \[!IMPORTANT\]
