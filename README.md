@@ -20,9 +20,3 @@ O objetivo não foi apenas construir o site, mas também experimentar novas abor
 O projeto faz parte do meu processo de aprendizado, unindo uma necessidade real a novas tecnologias e práticas de desenvolvimento.
 
 **OBS: De uma olhada no projeto [sweetshop-v1](https://github.com/arthurloni/sweetshop-v1), um site de direcionamento, contendo tambem meus estudos.**
-
----
-
-<p align="center">
-  <img src="./public/assets/website-v2.png" alt="Demonstração do Website" width="100%">
-</p>
