@@ -1,4 +1,4 @@
-# SweetShop - Loja de Doces
+# SweetShop 
 
 🌐 Read in: [English](README-EN.md)
 
@@ -7,7 +7,7 @@ During development, I used Google AI Studio as an opportunity to explore new too
 The goal wasn't just to build a website, but also to experiment with new development approaches, complementing AI-assisted coding with independent study, research, and references from other repositories.
 This project is part of my learning journey, combining a real-world need with new technologies and development practices.
 
-### **NOTE: Take a look at the sweetshop-v1 project, a referral site that also features case studies.**
+**NOTE: Take a look at the [sweetshop-v1](https://github.com/arthurloni/sweetshop-v1) project, a referral site that also features case studies.**
 
 ---
 
@@ -19,7 +19,7 @@ Durante o desenvolvimento, utilizei o Google AI Studio como uma oportunidade par
 O objetivo não foi apenas construir o site, mas também experimentar novas abordagens de desenvolvimento, complementando o uso da IA com estudos, pesquisas e referências de outros repositórios.
 O projeto faz parte do meu processo de aprendizado, unindo uma necessidade real a novas tecnologias e práticas de desenvolvimento.
 
-### **OBS: De uma olhada no projeto sweetshop-v1, um site de direcionamento contendo tambem estudos.**
+**OBS: De uma olhada no projeto [sweetshop-v1](https://github.com/arthurloni/sweetshop-v1), um site de direcionamento, contendo tambem meus estudos.**
 
 ---
 
