@@ -1,4 +1,6 @@
-# Meu Doce — Confeitaria Artesanal
+# Documentação do projeto
+
+🌐 Leia em: [Inglês](README.md)
 
 Plataforma web interativa e centrada no usuário (UCD) para a **Meu Doce — Confeitaria Artesanal**. O projeto adota uma identidade visual editorial em tons de branco e rosa antigo (`#C86D88`), estruturada com cardápio completo (**Doces, Salgados e Bebidas**), carrinho de compras, mural de avaliações, integração com Google Maps e operações de CRUD completas integradas ao PostgreSQL.
 
