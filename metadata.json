@@ -1,0 +1,6 @@
+{
+  "name": "Meu Doce — Doceria Artesanal",
+  "description": "Cardápio digital interativo, carrinho de encomendas, mural de avaliações e sistema CRUD com PostgreSQL para a Meu Doce Doceria Artesanal em Cuiabá - MT.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
