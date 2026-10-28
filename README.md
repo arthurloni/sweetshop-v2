@@ -1,5 +1,7 @@
 # Project Documentation
 
+🌐 Read in: [Português](README-PTBR.md)
+
 An interactive, user-centered web platform (UCD) for **sweet-shop ---
 Artisan Confectionery**. The project follows the white and antique-pink
 editorial aesthetic (`#C86D88`) of the supplied design reference and
