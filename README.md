@@ -1,22 +1,27 @@
-# SweetShop 
+# SweetShop — Meu Doce Doceria Artesanal
 
-🌐 Read in: [English](README-EN.md)
+🌐 Read in: [English](README-EN.md) | 🌐 Leia em: [Português](README-PT.md)
 
-This project was built to meet the needs of a growing artisanal sweets shop. The goal is to give the business a more modern online presence, making it easier to showcase its products while supporting the brand's growth.
-During development, I used Google AI Studio as an opportunity to explore new tools and learn how to incorporate artificial intelligence into my workflow. 
-The goal wasn't just to build a website, but also to experiment with new development approaches, complementing AI-assisted coding with independent study, research, and references from other repositories.
-This project is part of my learning journey, combining a real-world need with new technologies and development practices.
+This project was built to meet the needs of a growing artisanal sweets shop (**Meu Doce — Doceria Artesanal**). The application uses **JavaScript, TypeScript, Angular (v19 LTS), and Bootstrap 5** on the frontend, integrated with a **Node.js + Express** backend and **PostgreSQL** database.
+
+During development, the project was structured to serve both a real-world confectionery business and software engineering studies (Alura), featuring a clean modular Angular architecture, a dedicated menu route (`/cardapio`), persistent shopping cart, bounded-scroll feedback board, and secure administrator authentication/authorization.
 
 **NOTE: Take a look at the [sweetshop-v1](https://github.com/arthurloni/sweetshop-v1) project, a referral site that also features case studies.**
 
 ---
 
-🌐 Leia em: [Português](README-PT.md)
+## Quick Start / Execução Rápida
 
-Este projeto foi desenvolvido para atender às necessidades de uma doceria artesanal em crescimento. 
-A ideia é trazer uma presença digital mais moderna para o negócio, facilitando a apresentação dos produtos e acompanhando a evolução da marca.
-Durante o desenvolvimento, utilizei o Google AI Studio como uma oportunidade para explorar novas ferramentas e aprender a integrar a inteligência artificial ao meu fluxo de trabalho. 
-O objetivo não foi apenas construir o site, mas também experimentar novas abordagens de desenvolvimento, complementando o uso da IA com estudos, pesquisas e referências de outros repositórios.
-O projeto faz parte do meu processo de aprendizado, unindo uma necessidade real a novas tecnologias e práticas de desenvolvimento.
+```bash
+# 1. Instalar dependências / Install dependencies
+npm install
 
-**OBS: De uma olhada no projeto [sweetshop-v1](https://github.com/arthurloni/sweetshop-v1), um site de direcionamento, contendo tambem meus estudos.**
+# 2. Compilar e iniciar servidor completo em http://localhost:3000 / Build & start server
+npm run dev
+
+# 3. Verificar tipos e rodar testes automatizados / Lint & run automated tests
+npm run lint
+npm test
+```
+
+Consulte a documentação completa em [Português (README-PT.md)](README-PT.md) ou [Inglês (README-EN.md)](README-EN.md) para detalhes sobre variáveis de ambiente (`.env.example`), inicialização segura do administrador e migrações do PostgreSQL.

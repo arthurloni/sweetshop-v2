@@ -1,124 +1,161 @@
-# Documentação do projeto
+# Documentação do Projeto — Meu Doce Doceria Artesanal
 
-🌐 Leia em: [Inglês](README.md)
+🌐 Leia em: [Inglês](README-EN.md) | [Resumo Principal](README.md)
 
-Plataforma web interativa e centrada no usuário (UCD) para a **Meu Doce — Confeitaria Artesanal**. O projeto adota uma identidade visual editorial em tons de branco e rosa antigo (`#C86D88`), estruturada com cardápio completo (**Doces, Salgados e Bebidas**), carrinho de compras, mural de avaliações, integração com Google Maps e operações de CRUD completas integradas ao PostgreSQL.
+Plataforma web interativa e centrada no usuário (UCD) para a **Meu Doce — Confeitaria Artesanal**. O projeto foi evoluído para uma arquitetura moderna baseada em **JavaScript, TypeScript, Angular (v19 LTS) e Bootstrap (v5.3.8)** no frontend, integrada a um backend em **Node.js + Express** e banco de dados **PostgreSQL** (`pg` / `PGlite`).
+
+A aplicação preserva a identidade visual editorial em tons de branco (`#FFFFFF`), off-white rosado (`#FFF9FB`, `#FDF8F9`), blush (`#FCEEF2`) e rosa antigo (`#C86D88`), contando com página principal institucional, página exclusiva do cardápio (`/cardapio`), carrinho de compras persistente, mural de avaliações com rolagem interna, localização via Google Maps e autenticação/autorização administrativa para gestão do catálogo e moderação de avaliações.
 
 ---
 
-## Como executar o projeto (VS Code)
+## 1. Stack Tecnológica e Versões Adotadas
 
-1. Clone o repositório:
-   ```bash
-   git clone <URL_DO_REPOSITORIO>
-   ```
-2. Instale as dependências:
+* **Frontend:**
+  * **Angular:** `19.2.25` (`@angular/core`, `@angular/common`, `@angular/router`, `@angular/forms`, `@angular/platform-browser`)
+  * **Angular CLI & Build:** `19.2.27` (`@angular/cli`, `@angular/build`, `@angular/compiler-cli@19.2.25`)
+  * **Estilização:** **Bootstrap** `^5.3.8` + variáveis CSS editoriais da marca (`src/index.css`)
+  * **Linguagens:** TypeScript (`~5.8.2`) e JavaScript (`ES2022`)
+* **Backend:**
+  * **Runtime:** Node.js (`v24.19.0`) + `tsx` (`^4.21.0`)
+  * **Servidor HTTP / API REST:** Express (`^4.21.2`)
+  * **Segurança & Autenticação:** Node.js `crypto` nativo (`scrypt` com salt aleatório para hash de senhas e assinatura `HMAC-SHA256` para tokens de sessão e cookies `HttpOnly`)
+* **Banco de Dados:**
+  * **PostgreSQL:** `pg` (`^8.23.1`) para conexão com servidor PostgreSQL externo/local ou `@electric-sql/pglite` (`^0.5.12`) para banco PostgreSQL embarcado persistido em `./pgdata`.
+
+---
+
+## 2. Configuração Local e Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto (baseado no arquivo `.env.example`). **Nunca versione senhas ou segredos reais no repositório.**
+
+### Variáveis de Ambiente Necessárias
+
+| Variável | Descrição |
+| :--- | :--- |
+| `PORT` | Porta do servidor Express (padrão: `3000`) |
+| `AUTH_SECRET` | Segredo utilizado para assinatura `HMAC-SHA256` dos tokens de sessão |
+| `ADMIN_USERNAME` | Nome de usuário único do administrador inicial |
+| `ADMIN_PASSWORD` | Senha do administrador inicial (convertida e armazenada com hash `scrypt`) |
+| `PGHOST` | Host do PostgreSQL externo (se vazio, utiliza o PostgreSQL embarcado em `./pgdata`) |
+| `PGPORT` | Porta do PostgreSQL externo (padrão: `5432`) |
+| `PGUSER` | Usuário do banco PostgreSQL externo |
+| `PGPASSWORD` | Senha do banco PostgreSQL externo |
+| `PGDATABASE` | Nome do banco de dados no PostgreSQL externo |
+
+### Inicialização Segura do Primeiro Administrador
+
+1. Defina `ADMIN_USERNAME`, `ADMIN_PASSWORD` e `AUTH_SECRET` no seu arquivo `.env` local.
+2. Ao iniciar o servidor backend (`npm run server` ou `npm run dev`), a rotina de inicialização (`bootstrapAdminFromEnv` em `src/db/postgres.ts`) cria ou sincroniza a conta administrativa na tabela `admins` armazenando apenas o hash seguro (`scrypt$<salt>$<hash>`).
+3. Não existe cadastro público de administradores: visitantes comuns só acessam rotas públicas de leitura e envio de avaliação.
+
+---
+
+## 3. Como Instalar, Executar, Compilar e Testar
+
+1. **Instalar as dependências:**
    ```bash
    npm install
    ```
-3. Inicie o servidor de desenvolvimento:
+
+2. **Compilar e iniciar a aplicação completa (Angular + Express + PostgreSQL em `http://localhost:3000`):**
    ```bash
    npm run dev
    ```
 
----
+3. **Executar em modo de desenvolvimento separado (Angular CLI com Proxy + API Express):**
+   * Terminal 1 (Backend API na porta `3000`):
+     ```bash
+     npm run server
+     ```
+   * Terminal 2 (Angular Dev Server na porta `4200` com proxy para `/api`):
+     ```bash
+     npm start
+     ```
 
-## 1. Visão Geral e Conceito
+4. **Compilar o build de produção do Angular (`dist/browser`):**
+   ```bash
+   npm run build
+   ```
 
-* **O que a aplicação faz:** oferece aos clientes uma experiência intuitiva para explorar itens do cardápio, visualizar imagens em dimensões padronizadas (`500x500`, `800x800` e `700x900 px`), baixar fotos dos produtos, montar carrinhos e enviar pedidos diretamente via WhatsApp ou iFood. Permite também avaliar itens com notas de 1 a 5 estrelas e comentários.
-* **Painel Administrativo:** disponibiliza controle CRUD conectado ao PostgreSQL para cadastrar produtos, atualizar preços, ajustar fotos e moderar feedbacks enviados pela comunidade.
-* **Público-Alvo:**
-  * **Clientes:** buscam praticidade para consultar preços atualizados, conferir fotos reais dos produtos e fechar pedidos de forma rápida via WhatsApp ou iFood.
-  * **Administrador:** gerencia o catálogo em tempo real, atualizando valores, descrições e mídias sem necessidade de alterações manuais no banco de dados.
+5. **Executar verificação de tipos (Lint TypeScript):**
+   ```bash
+   npm run lint
+   ```
 
----
-
-## 2. Experiência do Usuário e Design Visual
-
-### Identidade Visual e Estilo
-
-* **Direção de Arte:** linha editorial para confeitaria artesanal, combinando fundos em branco puro (`#FFFFFF`) e off-white rosado (`#FFF9FB`), formas orgânicas circulares em tom blush (`#FCEEF2`) e botões em rosa antigo/mauve (`#C86D88`).
-* **Distribuição de Cores (Regra 60-30-10):**
-  * **60% (Base clara):** branco puro (`#FFFFFF`) e fundos de seção suaves (`#FDF8F9`).
-  * **30% (Superfícies e Contraste):** rosa blush (`#FCEEF2`) para destaques circulares e filtros; bordas sutis (`#F3DCE2`); títulos em marrom café escuro (`#23191C`); e textos de apoio em cinza quente (`#6E5D63`).
-  * **10% (Destaque Principal):** rosa Meu Doce (`#C86D88`, hover: `#B55975`) aplicado em botões primários (**Explorar Cardápio**, **Pedir via WhatsApp**) e abas ativas.
-* **Tipografia:**
-  * **Títulos e Hero:** `Playfair Display` (serifada clássica, com itálicos destacados).
-  * **Interface e Textos:** `Plus Jakarta Sans` (sem serifa, limpa e legível).
-  * **Preços e Métricas:** alinhamento numérico com `tabular-nums` para valores em reais (`R$ 15,00`, `R$ 4,50`) e dimensões (`500×500 px`).
-
----
-
-### Principais Fluxos e Seções
-
-1. **Cabeçalho e Menu Rápido:** logotipo oficial, links de navegação para seções da página, acesso ao painel administrativo e botão flutuante para o carrinho de compras.
-2. **Hero Section:** mensagem de destaque institucional (*"Um momento doce pode mudar o seu dia"*), botão de ação para o cardápio e integração com link do iFood.
-3. **Catálogo de Produtos e Cardápio (CRUD Dinâmico):**
-   * Filtros por categoria (**Doces**, **Salgados**, **Bebidas**, **Todos**) e formato de exibição (`500x500`, `800x800`, `700x900 px`).
-   * Cards com imagem, nome, descrição, data de fabricação, preço, botão de download da imagem tratada e adição ao carrinho.
-   * Visualizador embutido dos panfletos originais do cardápio (`CARDAPIO01`, `CARDAPIO02`, `CARDAPIO03`).
-4. **Mural de Feedbacks:** sistema interativo para envio de avaliações com nota e comentário, com moderação de edição/exclusão pelo painel de administração.
-5. **Localização e Contato:** visualização integrada via Google Maps com atalhos diretos para WhatsApp, Instagram e iFood.
+6. **Executar testes automatizados (Migrações, Preservação de Dados, Autenticação 401/200 e CRUD):**
+   ```bash
+   npm test
+   ```
 
 ---
 
-## 3. Decisões de Projeto e Trade-offs
-
-* **Povoamento Inicial (Seed) com Dados Reais:**
-  * **Abordagem:** inserção dos itens reais do cardápio físico (copos da felicidade, fatias de brownie, empadas, tortas e bebidas) logo na inicialização do PostgreSQL.
-  * **Motivação:** valida as operações de banco em ambiente real de homologação e evita o uso de dados genéricos (*lorem ipsum*).
-* **Processamento de Imagens com Canvas API:**
-  * **Abordagem:** redimensionamento dinâmico via HTML5 Canvas no momento do upload/download para as resoluções fixas `500x500`, `800x800` e `700x900 px` utilizando corte central inteligente (`object-fit: cover`).
-  * **Motivação:** garante padronização visual no frontend sem distorcer fotos tiradas diretamente de smartphones.
-
----
-
-## 4. Arquitetura Técnica
-
-### Diagrama de Componentes
+## 4. Arquitetura Técnica e Organização de Pastas
 
 ```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│             FRONTEND REACT — IDENTIDADE "MEU DOCE" (#C86D88 & BRANCO)        │
-│                                                                              │
-│  ┌────────────────────────┐  ┌─────────────────────────┐  ┌───────────────┐ │
-│  │ Cabeçalho & Menu       │  │ Hero Editorial          │  │ Carrinho      │ │
-│  │ • Logo Oficial         │  │ • Taglines de Destaque  │  │ • Slide-Over  │ │
-│  │ • Navegação / Produtos │  │ • Badges Visuais        │  │ • Subtotal    │ │
-│  │ • Contato / Admin      │  │ • CTAs Cardápio / iFood │  │ • WhatsApp    │ │
-│  └───────────┬────────────┘  └────────────┬────────────┘  └───────▲───────┘ │
-│              │                            │                       │         │
-│              ▼                            ▼                       │         │
-│  ┌────────────────────────────────────────────────────────────────┴───────┐ │
-│  │                   Catálogo de Produtos & CRUD                          │ │
-│  │                   (Doces | Salgados | Bebidas)                         │ │
-│  │ • Formatos: 500x500 px | 800x800 px | 700x900 px                       │ │
-│  │ • Dados: Imagem, Preço, Nome, Descrição e Data de Fabricação           │ │
-│  │ • Ações do Usuário: Ver Detalhes, Carrinho, Download de Imagem         │ │
-│  │ • Ações Admin: Inserir, Atualizar e Deletar Itens                      │ │
-│  └────────────────────────────────────┬────────────────────────────────────┘ │
-│                                       │                                    │
-│  ┌────────────────────────────────────┼───────────────────────────────────┐ │
-│  │ Mural de Avaliações                │ Localização & Contatos            │ │
-│  │ • Notas (1–5) e Comentários        │ • Google Maps integrado           │ │
-│  │ • Moderação Admin (Editar/Excluir) │ • WhatsApp, Instagram, iFood      │ │
-│  └──────────────────┬─────────────────┴─────────────────┬─────────────────┘ │
-└─────────────────────┼───────────────────────────────────┼───────────────────┘
-                      │ API REST (/api/products, /api/feedbacks)
-                      ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                    BACKEND EXPRESS + BANCO POSTGRESQL                        │
-│                                                                              │
-│ • Tabela `products`: id, name, price, category ('Doces'|'Salgados'|          │
-│   'Bebidas'), image_url, image_size, description, manufactured_date          │
-│ • Tabela `feedbacks`: id, author_name, rating, comment, created_at           │
-└──────────────────────────────────────────────────────────────────────────────┘
+sweetshop-v2/
+├── angular.json                 # Configuração do Angular CLI (Bootstrap 5 + build)
+├── proxy.conf.json              # Proxy de /api para http://localhost:3000 no ng serve
+├── server.ts                    # Servidor Express + Rotas REST + Auth + Hospedagem SPA
+├── index.html                   # HTML raiz (<app-root>) e fontes Google
+├── .env.example                 # Modelo documentado de variáveis de ambiente
+└── src/
+    ├── main.ts                  # Bootstrap da aplicação Angular
+    ├── index.css                # Variáveis e utilitários visuais Meu Doce + Bootstrap 5
+    ├── types.ts                 # Modelos TypeScript e constantes da loja/encartes
+    ├── auth/
+    │   └── security.ts          # Hash scrypt, tokens HMAC-SHA256 e middleware requireAdminAuth
+    ├── db/
+    │   └── postgres.ts          # Conexão PostgreSQL, migrações versionadas e queries CRUD
+    ├── utils/
+    │   └── imageCanvas.ts       # Processamento HTML5 Canvas (500x500, 800x800, 700x900 px)
+    ├── tests/
+    │   └── api-auth-crud.test.ts# Suite de testes de API, segurança e banco de dados
+    └── app/
+        ├── app.component.ts     # Layout raiz (Header, RouterOutlet, Footer, Drawer, Modais)
+        ├── app.config.ts        # Configuração de rotas e ZoneChangeDetection
+        ├── app.routes.ts        # Definição das rotas ('', 'cardapio', 'admin')
+        ├── guards/
+        │   └── admin.guard.ts   # Guard de proteção de rota administrativa no frontend
+        ├── services/
+        │   └── store.service.ts # Estado reativo (Signals) de catálogo, carrinho e sessão admin
+        ├── components/
+        │   ├── header/          # Barra superior com links, carrinho e status Admin
+        │   ├── footer/          # Rodapé institucional e créditos do desenvolvedor
+        │   ├── cart-drawer/     # Carrinho lateral persistido em localStorage
+        │   ├── feedback-section/# Mural de avaliações com rolagem interna e moderação Admin
+        │   ├── store-map-section/# Google Maps integrado e canais WhatsApp, Instagram e iFood
+        │   └── modals/          # Modais de Login Admin, Detalhes, CRUD Produto e Encartes
+        └── pages/
+            ├── home/            # Página Principal (/) institucional + Nossa Essência + Avaliações
+            └── menu/            # Página Exclusiva do Cardápio (/cardapio) com filtros e CRUD
 ```
 
 ---
 
-## 5. Recursos Visuais Integrados
+## 5. Modelo de Dados e Migrações Versionadas (PostgreSQL)
 
-* `LOGO_465ec8e3.jpeg`: logotipo oficial da marca aplicado na barra de navegação, hero e rodapé.
-* `CARDAPIO01`, `CARDAPIO02`, `CARDAPIO03`: artes originais do cardápio para consulta e download em alta resolução.
-* `PERFIL-INSTA_feec39bc.jpeg`: elemento de composição da seção social.
+O banco de dados utiliza migrações não-destrutivas controladas pela tabela `schema_migrations`, preservando integralmente os registros existentes:
+
+* **`schema_migrations` (`001_initial_schema`, `002_create_admins_table`):**
+  * `version` (`TEXT PRIMARY KEY`), `applied_at` (`TIMESTAMP`)
+* **`products`:**
+  * `id`, `name`, `price`, `image_url`, `category` (`'Doces' | 'Salgados' | 'Bebidas'`), `image_size` (`'500x500' | '800x800' | '700x900'`), `description`, `manufactured_date`, `redirect_url`, `created_at`
+* **`feedbacks`:**
+  * `id`, `author_name`, `rating` (`1..5`), `comment`, `created_at`
+* **`admins`:**
+  * `id`, `username` (`UNIQUE`), `password_hash` (`scrypt`), `created_at`
+
+---
+
+## 6. Funcionalidades Principais
+
+1. **Página Principal Institucional (`/`):**
+   * **Hero Section:** apresentação editorial com logotipo circular oficial (`/assets/LOGO_465ec8e3.jpeg`), acesso rápido à página exclusiva `/cardapio`, atalho para iFood e abertura do carrinho.
+   * **Seção "Nossa Essência" (`#essencia`):** apresentação das três linhas artesanais (**Doces, Salgados e Bebidas**) com visualização ampliada e download dos encartes oficiais (`CARDAPIO01`, `CARDAPIO02`, `CARDAPIO03`), sem o antigo bloco lateral do Instagram.
+   * **Mural de Avaliações (`#avaliacoes`):** envio público de notas (1 a 5 estrelas) e comentários, exibido em área com altura limitada e rolagem interna (`max-height: 520px; overflow-y: auto`), com edição e exclusão restritas ao administrador autenticado.
+   * **Localização e Contatos (`#contato`):** mapa interativo do Google Maps e cartões de contato direto via WhatsApp, Instagram e iFood.
+2. **Página Exclusiva do Cardápio (`/cardapio`):**
+   * Botão claro de retorno à página principal (`← Voltar para a página principal`).
+   * Filtros combinados por categoria (`Doces`, `Salgados`, `Bebidas`, `Todos`), busca por texto e formato de imagem (`500x500`, `800x800`, `700x900 px`).
+   * Persistência do carrinho em `localStorage` (`meudoce_cart_v1`) durante toda a navegação e recarregamento de página.
+   * Botões de **Cadastrar Produto**, **Editar** e **Excluir** exibidos somente para administradores autenticados e protegidos no backend pelo middleware `requireAdminAuth`.
