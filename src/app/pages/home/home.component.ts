@@ -51,7 +51,7 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                 routerLink="/cardapio"
                 class="btn btn-meudoce rounded-pill px-4 py-3 shadow-sm"
               >
-                🍰 Conheça o cardápio completo
+                Conheça o cardápio completo
               </a>
 
               <a
@@ -60,7 +60,7 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                 rel="noopener noreferrer"
                 class="btn btn-outline-meudoce rounded-pill px-4 py-3"
               >
-                Peça pelo iFood <span class="text-meudoce-pink">↗</span>
+                <img [src]="storeInfo.icons.ifood" alt="iFood" class="object-contain me-2" style="width: 20px; height: 20px; vertical-align: text-bottom;" /> Peça pelo iFood
               </a>
 
               <button
@@ -68,18 +68,13 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                 (click)="store.isCartOpen.set(true)"
                 class="btn btn-blush rounded-pill px-3 py-2.5 small"
               >
-                🛍️ Carrinho ({{ store.totalCartCount() }})
+                Carrinho ({{ store.totalCartCount() }})
               </button>
             </div>
 
             <!-- Location & Delivery Info Indicator -->
             <div class="pt-4 mt-2 d-flex align-items-center gap-3">
-              <div
-                class="rounded-circle bg-meudoce-blush text-meudoce-pink d-flex align-items-center justify-content-center flex-shrink-0"
-                style="width: 44px; height: 44px;"
-              >
-                💗
-              </div>
+              
               <div>
                 <p class="small text-meudoce-muted mb-0">
                   Encomendas e pronta entrega
@@ -167,7 +162,7 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                     <div
                       class="position-absolute bottom-0 end-0 m-3 badge rounded-pill bg-white text-meudoce-dark border border-meudoce px-3 py-2 shadow-sm"
                     >
-                      🔍 Clique para ampliar
+                      Clique para ampliar
                     </div>
                   </div>
 
@@ -225,7 +220,7 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                       download
                       class="btn btn-sm btn-outline-meudoce rounded-pill px-2.5 py-1 text-decoration-none"
                     >
-                      ⬇️ Baixar
+                      Baixar
                     </a>
                   </div>
                 </div>

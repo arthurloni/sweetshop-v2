@@ -22,7 +22,6 @@ import { ModalsComponent } from './components/modals/modals.component';
     <div class="min-vh-100 d-flex flex-column bg-white text-meudoce-dark">
       @if (store.toastMessage(); as msg) {
         <div class="toast-meudoce d-flex align-items-center gap-2">
-          <span>💗</span>
           <span>{{ msg }}</span>
         </div>
       }

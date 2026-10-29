@@ -60,7 +60,7 @@ import { STORE_INFO } from '../../../types';
             (click)="store.isCartOpen.set(true)"
             class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
           >
-            <span>🛍️</span>
+            
             <span>Carrinho ({{ store.totalCartCount() }})</span>
           </button>
 
@@ -88,7 +88,7 @@ import { STORE_INFO } from '../../../types';
               (click)="store.isLoginModalOpen.set(true)"
               class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-2"
             >
-              🔑 Área Admin
+              🔒 Área Admin
             </button>
           }
 
@@ -98,7 +98,7 @@ import { STORE_INFO } from '../../../types';
             rel="noopener noreferrer"
             class="btn btn-sm btn-meudoce rounded-pill px-3 py-2 shadow-sm"
           >
-            Peça pelo WhatsApp
+            <img [src]="storeInfo.icons.whatsapp" alt="WhatsApp" class="object-contain me-1" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Peça pelo WhatsApp
           </a>
         </div>
       </div>

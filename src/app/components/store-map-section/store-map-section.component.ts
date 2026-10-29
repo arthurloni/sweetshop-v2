@@ -27,12 +27,7 @@ import { STORE_INFO } from '../../../types';
             class="d-flex flex-wrap align-items-center justify-content-between gap-3 px-4 py-3 bg-meudoce-blush border-bottom border-meudoce"
           >
             <div class="d-flex align-items-center gap-3">
-              <div
-                class="rounded-circle bg-white text-meudoce-pink d-flex align-items-center justify-content-center border border-meudoce"
-                style="width: 38px; height: 38px;"
-              >
-                📍
-              </div>
+              
               <div>
                 <h3 class="small fw-bold text-meudoce-dark mb-0">
                   Meu Doce Doceria — Loja Física
@@ -47,7 +42,7 @@ import { STORE_INFO } from '../../../types';
               rel="noopener noreferrer"
               class="btn btn-sm btn-meudoce rounded-pill px-4 py-2"
             >
-              🧭 Abrir no Google Maps
+              Abrir no Google Maps
             </a>
           </div>
 
@@ -80,11 +75,8 @@ import { STORE_INFO } from '../../../types';
                 class="card-meudoce d-flex align-items-center justify-content-between p-4 text-decoration-none h-100"
               >
                 <div class="d-flex align-items-center gap-3">
-                  <div
-                    class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                    style="width: 48px; height: 48px; background-color: rgba(37, 211, 102, 0.14); font-size: 1.3rem;"
-                  >
-                    📱
+                  <div class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0 bg-white border border-meudoce p-2 shadow-sm" style="width: 48px; height: 48px;">
+                    <img [src]="storeInfo.icons.whatsapp" alt="WhatsApp Meu Doce" class="w-100 h-100 object-contain" />
                   </div>
                   <div>
                     <span class="small text-meudoce-muted d-block">WhatsApp Direto</span>
@@ -96,7 +88,7 @@ import { STORE_INFO } from '../../../types';
                     </span>
                   </div>
                 </div>
-                <span class="text-meudoce-pink">↗</span>
+                
               </a>
             </div>
 
@@ -109,11 +101,8 @@ import { STORE_INFO } from '../../../types';
                 class="card-meudoce d-flex align-items-center justify-content-between p-4 text-decoration-none h-100"
               >
                 <div class="d-flex align-items-center gap-3">
-                  <div
-                    class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                    style="width: 48px; height: 48px; background-color: rgba(225, 48, 108, 0.14); font-size: 1.3rem;"
-                  >
-                    💗
+                  <div class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0 bg-white border border-meudoce p-2 shadow-sm" style="width: 48px; height: 48px;">
+                    <img [src]="storeInfo.icons.instagram" alt="Instagram Meu Doce" class="w-100 h-100 object-contain" />
                   </div>
                   <div>
                     <span class="small text-meudoce-muted d-block">Siga no Instagram</span>
@@ -125,7 +114,7 @@ import { STORE_INFO } from '../../../types';
                     </span>
                   </div>
                 </div>
-                <span class="text-meudoce-pink">↗</span>
+                
               </a>
             </div>
 
@@ -138,11 +127,8 @@ import { STORE_INFO } from '../../../types';
                 class="card-meudoce d-flex align-items-center justify-content-between p-4 text-decoration-none h-100"
               >
                 <div class="d-flex align-items-center gap-3">
-                  <div
-                    class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                    style="width: 48px; height: 48px; background-color: rgba(234, 29, 44, 0.14); font-size: 1.3rem;"
-                  >
-                    🛍️
+                  <div class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0 bg-white border border-meudoce p-2 shadow-sm" style="width: 48px; height: 48px;">
+                    <img [src]="storeInfo.icons.ifood" alt="iFood Meu Doce" class="w-100 h-100 object-contain" />
                   </div>
                   <div>
                     <span class="small text-meudoce-muted d-block">Delivery Oficial</span>
@@ -154,7 +140,7 @@ import { STORE_INFO } from '../../../types';
                     </span>
                   </div>
                 </div>
-                <span class="text-meudoce-pink">↗</span>
+                
               </a>
             </div>
           </div>

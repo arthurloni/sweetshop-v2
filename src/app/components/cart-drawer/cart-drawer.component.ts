@@ -16,7 +16,7 @@ import { STORE_INFO } from '../../../types';
             class="d-flex align-items-center justify-content-between px-4 py-3 bg-meudoce-surface border-bottom border-meudoce"
           >
             <div class="d-flex align-items-center gap-2">
-              <span class="fs-5">🛍️</span>
+              
               <h3 class="h5 font-serif-editorial fw-bold text-meudoce-dark mb-0">
                 Seu carrinho de doces
               </h3>
@@ -36,12 +36,7 @@ import { STORE_INFO } from '../../../types';
           <div class="flex-grow-1 overflow-auto p-4">
             @if (store.cartItems().length === 0) {
               <div class="text-center py-5">
-                <div
-                  class="rounded-circle bg-meudoce-blush text-meudoce-pink d-inline-flex align-items-center justify-content-center mb-3"
-                  style="width: 56px; height: 56px; font-size: 1.4rem;"
-                >
-                  🛍️
-                </div>
+                
                 <p class="font-serif-editorial fw-bold fs-5 text-meudoce-dark mb-1">
                   Seu carrinho está vazio
                 </p>
@@ -90,14 +85,7 @@ import { STORE_INFO } from '../../../types';
                         </button>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      (click)="store.removeFromCart(item.product.id)"
-                      class="btn btn-sm text-danger"
-                      aria-label="Remover item"
-                    >
-                      🗑️
-                    </button>
+                    <button type="button" (click)="store.removeFromCart(item.product.id)" class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width: 26px; height: 26px; line-height: 1;" aria-label="Remover item">✕</button>
                   </div>
                 }
               </div>
@@ -121,7 +109,7 @@ import { STORE_INFO } from '../../../types';
                   rel="noopener noreferrer"
                   class="btn btn-meudoce rounded-pill py-2.5 small"
                 >
-                  📱 Enviar pedido completo no WhatsApp
+                  <img [src]="storeInfo.icons.whatsapp" alt="WhatsApp" class="object-contain me-2" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Enviar pedido completo no WhatsApp
                 </a>
 
                 <div class="d-flex align-items-center gap-2">
@@ -131,7 +119,7 @@ import { STORE_INFO } from '../../../types';
                     rel="noopener noreferrer"
                     class="btn btn-outline-meudoce rounded-pill py-2 small flex-grow-1"
                   >
-                    Pedir pelo iFood ↗
+                    <img [src]="storeInfo.icons.ifood" alt="iFood" class="object-contain me-2" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Pedir pelo iFood
                   </a>
 
                   <button

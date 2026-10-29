@@ -50,7 +50,7 @@ import { Feedback } from '../../../types';
               class="bg-meudoce-surface rounded-4 p-4 border border-meudoce"
             >
               <div class="d-flex align-items-center gap-2 mb-3">
-                <span class="fs-5">💬</span>
+                
                 <h3 class="h5 font-serif-editorial fw-bold text-meudoce-dark mb-0">
                   Escrever avaliação
                 </h3>
@@ -127,7 +127,7 @@ import { Feedback } from '../../../types';
               </span>
               @if (store.isAuthenticated()) {
                 <span class="badge rounded-pill bg-meudoce-blush text-meudoce-pink">
-                  Moderação Admin Habilitada
+                  🔒 Moderação Admin Habilitada
                 </span>
               }
             </div>
@@ -217,7 +217,7 @@ import { Feedback } from '../../../types';
                             class="btn btn-sm btn-outline-meudoce rounded-pill px-2.5 py-1"
                             title="Editar comentário (Administrador)"
                           >
-                            ✏️ Editar
+                            Editar
                           </button>
                           <button
                             type="button"
@@ -225,7 +225,7 @@ import { Feedback } from '../../../types';
                             class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1"
                             title="Apagar comentário (Administrador)"
                           >
-                            🗑️ Apagar
+                            Apagar
                           </button>
                         </div>
                       }

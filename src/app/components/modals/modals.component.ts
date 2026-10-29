@@ -38,7 +38,7 @@ import {
                 ACESSO RESTRITO
               </span>
               <h3 class="h5 font-serif-editorial fw-bold text-meudoce-dark mb-0">
-                Autenticação Administrativa
+                🔒 Autenticação Administrativa
               </h3>
             </div>
             <button
@@ -143,7 +143,7 @@ import {
                 class="mt-3 w-100 d-flex flex-wrap align-items-center justify-content-between gap-2 small text-meudoce-muted"
               >
                 <span class="font-mono-tabular">
-                  📐 Formato: {{ getSizeConfig(product.imageSize).label }}
+                  Formato: {{ getSizeConfig(product.imageSize).label }}
                 </span>
 
                 <button
@@ -151,7 +151,7 @@ import {
                   (click)="handleDownload(product)"
                   class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-1"
                 >
-                  ⬇️ Baixar imagem
+                  Baixar imagem
                 </button>
               </div>
             </div>
@@ -193,14 +193,14 @@ import {
                 <div class="pt-3 border-top border-meudoce small text-meudoce-muted">
                   @if (product.manufacturedDate) {
                     <div class="mb-1">
-                      📅 Data de fabricação:
+                      Data de fabricação:
                       <strong class="text-meudoce-dark font-mono-tabular">
                         {{ product.manufacturedDate }}
                       </strong>
                     </div>
                   }
                   <div>
-                    🖼️ Resolução configurada:
+                    Resolução configurada:
                     <strong class="text-meudoce-dark font-mono-tabular">
                       {{ getSizeConfig(product.imageSize).width }} ×
                       {{ getSizeConfig(product.imageSize).height }} px
@@ -239,7 +239,7 @@ import {
                     (click)="addDetailProductToCart(product)"
                     class="btn btn-meudoce rounded-pill py-2.5 px-4 small flex-grow-1"
                   >
-                    🛍️ Salvar no carrinho
+                    Salvar no carrinho
                   </button>
                 </div>
 
@@ -252,7 +252,7 @@ import {
                       rel="noopener noreferrer"
                       class="btn btn-outline-success w-100 rounded-pill py-2 small fw-semibold"
                     >
-                      📱 Pedir no WhatsApp ↗
+                      <img [src]="storeInfo.icons.whatsapp" alt="WhatsApp" class="object-contain me-2" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Pedir no WhatsApp
                     </a>
                   </div>
                   <div class="col-12 col-sm-6">
@@ -262,7 +262,7 @@ import {
                       rel="noopener noreferrer"
                       class="btn btn-blush w-100 rounded-pill py-2 small"
                     >
-                      Pedir pelo iFood ↗
+                      <img [src]="storeInfo.icons.ifood" alt="iFood" class="object-contain me-2" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Pedir pelo iFood
                     </a>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ import {
                       (click)="editFromDetail(product)"
                       class="btn btn-link btn-sm text-meudoce-pink text-decoration-none p-0 fw-semibold"
                     >
-                      ✏️ Editar postagem deste produto (Admin)
+                      Editar postagem deste produto (Admin)
                     </button>
                   </div>
                 }
@@ -469,7 +469,7 @@ import {
 
                     <div class="d-grid gap-2 mb-3">
                       <label class="btn btn-meudoce rounded-3 py-2 small mb-0 cursor-pointer">
-                        📤 Anexar foto do dispositivo
+                        Anexar foto do dispositivo
                         <input
                           type="file"
                           accept="image/*"
@@ -483,7 +483,7 @@ import {
                         (click)="generatePatisserieArt()"
                         class="btn btn-outline-meudoce rounded-3 py-2 small"
                       >
-                        ✨ Gerar ilustração da confeitaria
+                        Gerar ilustração da confeitaria
                       </button>
                     </div>
 

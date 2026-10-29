@@ -25,7 +25,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
             routerLink="/"
             class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2"
           >
-            <span>←</span>
+            
             <span>Voltar para a página principal</span>
           </a>
 
@@ -35,7 +35,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
               (click)="store.isCartOpen.set(true)"
               class="btn btn-sm btn-blush rounded-pill px-3 py-2"
             >
-              🛍️ Ver Carrinho ({{ store.totalCartCount() }})
+              Ver Carrinho ({{ store.totalCartCount() }})
             </button>
 
             <!-- Admin Actions strictly restricted to authenticated administrators (Requirement 4.2 & 4.3) -->
@@ -45,7 +45,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                 (click)="store.openCreateProductModal()"
                 class="btn btn-sm btn-meudoce rounded-pill px-3 py-2"
               >
-                ➕ Cadastrar Produto
+                Cadastrar Produto
               </button>
             } @else {
               <button
@@ -53,7 +53,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                 (click)="store.isLoginModalOpen.set(true)"
                 class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-2"
               >
-                🔑 Login Admin para Gerenciar
+                🔒 Login Admin para Gerenciar
               </button>
             }
           </div>
@@ -97,7 +97,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                 type="search"
                 [ngModel]="store.searchQuery()"
                 (ngModelChange)="store.searchQuery.set($event)"
-                placeholder="🔍 Buscar doce, salgado ou bebida..."
+                placeholder="Buscar doce, salgado ou bebida..."
                 class="form-control form-control-sm rounded-pill px-3 py-2"
               />
             </div>
@@ -131,7 +131,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
 
             @if (store.isAuthenticated()) {
               <span class="badge rounded-pill bg-dark text-white px-3 py-2">
-                Modo Administrador Ativo ({{ store.currentAdmin()?.username }})
+                🔒 Modo Administrador ({{ store.currentAdmin()?.username }})
               </span>
             }
           </div>
@@ -208,7 +208,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                         @if (product.manufacturedDate) {
                           <span>·</span>
                           <span class="font-mono-tabular">
-                            📅 {{ product.manufacturedDate }}
+                            Fabricado em {{ product.manufacturedDate }}
                           </span>
                         }
                       </div>
@@ -242,7 +242,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                           (click)="store.addToCart(product, 1)"
                           class="btn btn-sm btn-meudoce rounded-pill py-2 px-3 flex-grow-1"
                         >
-                          🛍️ Salvar no carrinho
+                          Salvar no carrinho
                         </button>
 
                         <button
@@ -251,7 +251,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                           class="btn btn-sm btn-outline-meudoce rounded-pill py-2 px-3"
                           [title]="'Baixar imagem (' + getSizeConfig(product.imageSize).shortLabel + ')'"
                         >
-                          ⬇️ Baixar
+                          Baixar foto
                         </button>
                       </div>
 
@@ -261,7 +261,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                           (click)="store.activeProductDetail.set(product)"
                           class="btn btn-link btn-sm text-meudoce-pink text-decoration-none p-0 fw-semibold"
                         >
-                          Comprar / Detalhes ↗
+                          Comprar / Detalhes
                         </button>
 
                         <!-- Edit & Delete actions strictly available ONLY to authenticated admins -->
@@ -272,14 +272,14 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                               (click)="store.openEditProductModal(product)"
                               class="btn btn-link btn-sm text-meudoce-dark text-decoration-none p-0 fw-medium"
                             >
-                              ✏️ Editar
+                              Editar
                             </button>
                             <button
                               type="button"
                               (click)="store.deleteProduct(product)"
                               class="btn btn-link btn-sm text-danger text-decoration-none p-0 fw-medium"
                             >
-                              🗑️ Excluir
+                              Excluir
                             </button>
                           </div>
                         }

@@ -126,6 +126,11 @@ export const STORE_INFO = {
   name: 'Meu Doce',
   subtitle: 'DOCERIA ARTESANAL',
   logoUrl: '/assets/LOGO_465ec8e3.jpeg',
+  icons: {
+    whatsapp: '/assets/Whatsapp_icon.png',
+    instagram: '/assets/Instagram_icon.png',
+    ifood: '/assets/Ifood_icon.png',
+  },
   address: 'Rua 04 De Janeiro, 780 - Jardim Leblon, Cuiabá - MT, 78008-800',
   whatsappDisplay: '(65) 99342-4125',
   whatsappSecondaryDisplay: '(65) 9342-4125',

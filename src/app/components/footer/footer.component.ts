@@ -50,7 +50,7 @@ import { STORE_INFO } from '../../../types';
             class="d-flex flex-wrap align-items-center gap-2 bg-meudoce-surface px-3 py-2 rounded-pill border border-meudoce"
           >
             <span class="text-meudoce-dark fw-medium">
-              💻 Desenvolvido por <strong>{{ storeInfo.creator.name }}</strong> ·
+              Desenvolvido por <strong>{{ storeInfo.creator.name }}</strong> ·
               <span class="text-meudoce-muted">{{ storeInfo.creator.role }}</span>
             </span>
             <span class="text-meudoce-muted">|</span>
