@@ -146,7 +146,6 @@ export const STORE_INFO = {
   },
   creator: {
     name: 'Arthur Loni',
-    role: 'Desenvolvedor de Software',
     github: 'https://github.com/arthurloni',
     linkedin: 'https://www.linkedin.com/in/arthur-loni-7b90a62b8',
   },
