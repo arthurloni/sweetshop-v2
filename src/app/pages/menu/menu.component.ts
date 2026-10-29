@@ -102,26 +102,28 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
               />
             </div>
 
-            <!-- Adaptive Image Size Filter (500x500, 800x800, 700x900) -->
-            <div
-              class="d-flex align-items-center gap-1 bg-white p-1 rounded-pill border border-meudoce overflow-auto"
-            >
-              <span class="small fw-semibold text-meudoce-muted ps-2 pe-1">
-                Formato:
-              </span>
-              @for (sizeOpt of sizeFilters; track sizeOpt) {
-                <button
-                  type="button"
-                  (click)="store.selectedSizeFilter.set(sizeOpt)"
-                  class="btn btn-sm rounded-pill px-2.5 py-1 font-mono-tabular"
-                  style="font-size: 0.75rem;"
-                  [class.btn-blush]="store.selectedSizeFilter() === sizeOpt"
-                  [class.border-0]="store.selectedSizeFilter() !== sizeOpt"
-                >
-                  {{ sizeOpt === 'Todos' ? 'Todos' : sizeOpt + 'px' }}
-                </button>
-              }
-            </div>
+            @if (store.isAuthenticated()) {
+              <!-- Adaptive Image Size Filter (Apenas Administrador) -->
+              <div
+                class="d-flex align-items-center gap-1 bg-white p-1 rounded-pill border border-meudoce overflow-auto"
+              >
+                <span class="small fw-semibold text-meudoce-muted ps-2 pe-1">
+                  Formato:
+                </span>
+                @for (sizeOpt of sizeFilters; track sizeOpt) {
+                  <button
+                    type="button"
+                    (click)="store.selectedSizeFilter.set(sizeOpt)"
+                    class="btn btn-sm rounded-pill px-2.5 py-1 font-mono-tabular"
+                    style="font-size: 0.75rem;"
+                    [class.btn-blush]="store.selectedSizeFilter() === sizeOpt"
+                    [class.border-0]="store.selectedSizeFilter() !== sizeOpt"
+                  >
+                    {{ sizeOpt === 'Todos' ? 'Todos' : sizeOpt + 'px' }}
+                  </button>
+                }
+              </div>
+            }
           </div>
 
           <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-2">
@@ -201,10 +203,12 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
                         <span class="text-uppercase fw-bold text-meudoce-pink">
                           {{ product.category }}
                         </span>
-                        <span>·</span>
-                        <span class="font-mono-tabular">
-                          {{ getSizeConfig(product.imageSize).shortLabel }}
-                        </span>
+                        @if (store.isAuthenticated()) {
+                          <span>·</span>
+                          <span class="font-mono-tabular">
+                            {{ getSizeConfig(product.imageSize).shortLabel }}
+                          </span>
+                        }
                         @if (product.manufacturedDate) {
                           <span>·</span>
                           <span class="font-mono-tabular">

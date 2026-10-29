@@ -30,7 +30,7 @@ export class StoreService {
   readonly filteredProducts = computed(() => {
     const prods = this.products();
     const cat = this.selectedCategory();
-    const size = this.selectedSizeFilter();
+    const size = this.isAuthenticated() ? this.selectedSizeFilter() : 'Todos';
     const q = this.searchQuery().trim().toLowerCase();
 
     return prods.filter((item) => {
@@ -148,6 +148,7 @@ export class StoreService {
       });
       if (!res.ok) {
         this.currentAdmin.set(null);
+      this.selectedSizeFilter.set('Todos');
         sessionStorage.removeItem(SESSION_TOKEN_KEY);
         return false;
       }
@@ -201,6 +202,7 @@ export class StoreService {
         // Ignore
       }
       this.currentAdmin.set(null);
+      this.selectedSizeFilter.set('Todos');
       this.isProductFormOpen.set(false);
       this.editingProduct.set(null);
       this.showToast('Sessão administrativa encerrada com segurança.');
