@@ -98,7 +98,7 @@ import { STORE_INFO } from '../../../types';
             rel="noopener noreferrer"
             class="btn btn-sm btn-meudoce rounded-pill px-3 py-2 shadow-sm"
           >
-            <img [src]="storeInfo.icons.whatsapp" alt="WhatsApp" class="object-contain me-1" style="width: 18px; height: 18px; vertical-align: text-bottom;" /> Peça pelo WhatsApp
+            Peça pelo WhatsApp
           </a>
         </div>
       </div>
