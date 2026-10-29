@@ -1,4 +1,4 @@
-import { IMAGE_SIZE_CONFIG, ImageSizeOption, Product } from '../types.ts';
+import { IMAGE_SIZE_CONFIG, ImageSizeOption, Product } from '../types';
 
 /**
  * Generates an artisanal patisserie SVG illustration encoded as a Data URI

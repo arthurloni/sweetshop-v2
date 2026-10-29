@@ -2,8 +2,9 @@ import { PGlite } from '@electric-sql/pglite';
 import pg from 'pg';
 import path from 'path';
 import fs from 'fs';
-import { createPatisserieSvgDataUri } from '../utils/imageCanvas.ts';
-import { Feedback, ImageSizeOption, Product, ProductCategory } from '../types.ts';
+import { createPatisserieSvgDataUri } from '../utils/imageCanvas';
+import { AdminUser, Feedback, ImageSizeOption, Product, ProductCategory } from '../types';
+import { hashPassword } from '../auth/security';
 
 const { Pool } = pg;
 
@@ -17,6 +18,7 @@ interface SqlExecutor {
 }
 
 let dbExecutor: SqlExecutor | null = null;
+let hasLegacyPortugueseColumns = false;
 
 async function getDb(): Promise<SqlExecutor> {
   if (dbExecutor) return dbExecutor;
@@ -391,30 +393,128 @@ const INITIAL_FEEDBACKS_SEED = [
   },
 ];
 
+async function hasMigration(executor: SqlExecutor, version: string): Promise<boolean> {
+  const res = await executor.query<{ version: string }>(
+    'SELECT version FROM schema_migrations WHERE version = $1',
+    [version]
+  );
+  return res.rows.length > 0;
+}
+
+async function recordMigration(executor: SqlExecutor, version: string): Promise<void> {
+  await executor.query(
+    'INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT (version) DO NOTHING',
+    [version]
+  );
+}
+
+/**
+ * Versioned, non-destructive database migration and seed runner.
+ * Preserves all existing records in `products`, `feedbacks`, and `admins`.
+ */
 async function initializeSchemaAndSeed(executor: SqlExecutor) {
   await executor.exec(`
-    CREATE TABLE IF NOT EXISTS products (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL,
-      price NUMERIC(10, 2) NOT NULL,
-      image_url TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT 'Doces',
-      image_size TEXT NOT NULL DEFAULT '500x500',
-      description TEXT NOT NULL DEFAULT '',
-      manufactured_date TEXT NOT NULL DEFAULT '',
-      redirect_url TEXT NOT NULL DEFAULT '',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS feedbacks (
-      id SERIAL PRIMARY KEY,
-      author_name TEXT NOT NULL,
-      rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-      comment TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version TEXT PRIMARY KEY,
+      applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
+  // Migration 001: Initial products and feedbacks tables
+  if (!(await hasMigration(executor, '001_initial_schema'))) {
+    await executor.exec(`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        price NUMERIC(10, 2) NOT NULL,
+        image_url TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'Doces',
+        image_size TEXT NOT NULL DEFAULT '500x500',
+        description TEXT NOT NULL DEFAULT '',
+        manufactured_date TEXT NOT NULL DEFAULT '',
+        redirect_url TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS feedbacks (
+        id SERIAL PRIMARY KEY,
+        author_name TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await recordMigration(executor, '001_initial_schema');
+  }
+
+  // Migration 002: Administrator accounts table for authentication & authorization
+  if (!(await hasMigration(executor, '002_create_admins_table'))) {
+    await executor.exec(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await recordMigration(executor, '002_create_admins_table');
+  }
+
+  // Detect whether `products` has legacy Portuguese columns (`nome`, `preco`, etc.)
+  const colsRes = await executor.query<{ column_name: string }>(
+    `SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products'`
+  );
+  const colNames = new Set(colsRes.rows.map((r) => r.column_name));
+  hasLegacyPortugueseColumns = colNames.has('nome');
+
+  // Migration 003: Reconcile legacy Portuguese columns (`nome`, `preco`, `descricao`, `imagem_url`, `data_fabricacao`)
+  // with documented columns (`name`, `price`, `category`, `image_url`, `image_size`, `description`, `manufactured_date`, `redirect_url`)
+  // without losing any existing records!
+  if (!(await hasMigration(executor, '003_reconcile_products_schema'))) {
+    await executor.exec(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS name TEXT DEFAULT '';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS price NUMERIC(10, 2) DEFAULT 0;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT '';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Doces';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS image_size TEXT DEFAULT '500x500';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS manufactured_date TEXT DEFAULT '';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS redirect_url TEXT DEFAULT '';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    `);
+
+    if (hasLegacyPortugueseColumns) {
+      await executor.exec(`
+        ALTER TABLE products ALTER COLUMN nome DROP NOT NULL;
+        ALTER TABLE products ALTER COLUMN preco DROP NOT NULL;
+        UPDATE products
+        SET name = COALESCE(NULLIF(name, ''), nome, 'Doce Artesanal'),
+            price = CASE WHEN price IS NULL OR price = 0 THEN COALESCE(preco, 10.00) ELSE price END,
+            description = COALESCE(NULLIF(description, ''), descricao, ''),
+            image_url = COALESCE(NULLIF(image_url, ''), imagem_url, ''),
+            manufactured_date = COALESCE(NULLIF(manufactured_date, ''), CAST(data_fabricacao AS TEXT), '');
+      `);
+    }
+
+    // Ensure any existing row without an image receives an artisanal SVG illustration
+    const existingRows = await executor.query<any>('SELECT * FROM products');
+    for (const row of existingRows.rows) {
+      const currentImg = row.image_url || row.imagem_url || '';
+      if (!currentImg || String(currentImg).trim() === '') {
+        const title = row.name || row.nome || 'Doce Artesanal';
+        const category = (row.category || 'Doces') as ProductCategory;
+        const svgUri = createPatisserieSvgDataUri(title, category, 'strawberry');
+        await executor.query(
+          'UPDATE products SET image_url = $1 WHERE id = $2',
+          [svgUri, row.id]
+        );
+      }
+    }
+
+    await recordMigration(executor, '003_reconcile_products_schema');
+  }
+
+  // Seed products only if table is completely empty
   const countRes = await executor.query<{ count: string | number }>(
     'SELECT COUNT(*) as count FROM products'
   );
@@ -440,6 +540,7 @@ async function initializeSchemaAndSeed(executor: SqlExecutor) {
     }
   }
 
+  // Seed feedbacks only if table is completely empty
   const fbCountRes = await executor.query<{ count: string | number }>(
     'SELECT COUNT(*) as count FROM feedbacks'
   );
@@ -453,20 +554,130 @@ async function initializeSchemaAndSeed(executor: SqlExecutor) {
       );
     }
   }
+
+  // Bootstrap initial administrator from environment variables if configured
+  await bootstrapAdminFromEnv(executor);
+}
+
+async function bootstrapAdminFromEnv(executor: SqlExecutor) {
+  const envUsername = process.env.ADMIN_USERNAME?.trim();
+  const envPassword = process.env.ADMIN_PASSWORD?.trim();
+
+  if (!envUsername || !envPassword) {
+    return;
+  }
+
+  const existing = await executor.query<{ id: number; username: string }>(
+    'SELECT id, username FROM admins WHERE username = $1',
+    [envUsername]
+  );
+
+  const passwordHash = hashPassword(envPassword);
+
+  if (existing.rows.length === 0) {
+    await executor.query(
+      'INSERT INTO admins (username, password_hash) VALUES ($1, $2)',
+      [envUsername, passwordHash]
+    );
+  } else {
+    await executor.query(
+      'UPDATE admins SET password_hash = $1 WHERE username = $2',
+      [passwordHash, envUsername]
+    );
+  }
+}
+
+export async function ensureAdminAccount(username: string, plainPassword: string): Promise<AdminUser> {
+  const db = await getDb();
+  const cleanUser = username.trim();
+  const passwordHash = hashPassword(plainPassword);
+  const existing = await db.query<{ id: number; username: string; created_at: string }>(
+    'SELECT id, username, created_at FROM admins WHERE username = $1',
+    [cleanUser]
+  );
+
+  if (existing.rows.length > 0) {
+    const updated = await db.query<{ id: number; username: string; created_at: string }>(
+      'UPDATE admins SET password_hash = $1 WHERE username = $2 RETURNING id, username, created_at',
+      [passwordHash, cleanUser]
+    );
+    return {
+      id: Number(updated.rows[0].id),
+      username: updated.rows[0].username,
+      createdAt: updated.rows[0].created_at,
+    };
+  }
+
+  const inserted = await db.query<{ id: number; username: string; created_at: string }>(
+    'INSERT INTO admins (username, password_hash) VALUES ($1, $2) RETURNING id, username, created_at',
+    [cleanUser, passwordHash]
+  );
+  return {
+    id: Number(inserted.rows[0].id),
+    username: inserted.rows[0].username,
+    createdAt: inserted.rows[0].created_at,
+  };
+}
+
+export async function findAdminByUsername(
+  username: string
+): Promise<{ id: number; username: string; passwordHash: string } | null> {
+  const db = await getDb();
+  const res = await db.query<{ id: number; username: string; password_hash: string }>(
+    'SELECT id, username, password_hash FROM admins WHERE username = $1',
+    [username.trim()]
+  );
+  if (!res.rows[0]) return null;
+  return {
+    id: Number(res.rows[0].id),
+    username: res.rows[0].username,
+    passwordHash: res.rows[0].password_hash,
+  };
+}
+
+export async function deleteAdminByUsername(username: string): Promise<void> {
+  const db = await getDb();
+  await db.query('DELETE FROM admins WHERE username = $1', [username.trim()]);
+}
+
+export async function listAppliedMigrations(): Promise<string[]> {
+  const db = await getDb();
+  const res = await db.query<{ version: string }>(
+    'SELECT version FROM schema_migrations ORDER BY version ASC'
+  );
+  return res.rows.map((r) => r.version);
 }
 
 function mapProductRow(row: any): Product {
+  const resolvedName = row.name || row.nome || 'Doce Artesanal';
+  const resolvedCategory = (row.category || 'Doces') as ProductCategory;
+  const rawImg = row.image_url || row.imagem_url || '';
+  const resolvedImg =
+    rawImg && String(rawImg).trim() !== ''
+      ? String(rawImg)
+      : createPatisserieSvgDataUri(resolvedName, resolvedCategory, 'strawberry');
+
+  let resolvedDate = row.manufactured_date || '';
+  if (!resolvedDate && row.data_fabricacao) {
+    resolvedDate =
+      row.data_fabricacao instanceof Date
+        ? row.data_fabricacao.toISOString().slice(0, 10)
+        : String(row.data_fabricacao).slice(0, 10);
+  }
+
+  const createdRaw = row.created_at || row.criado_em;
+
   return {
     id: Number(row.id),
-    name: row.name,
-    price: Number(row.price),
-    imageUrl: row.image_url,
-    category: (row.category || 'Doces') as ProductCategory,
+    name: resolvedName,
+    price: Number(row.price ?? row.preco ?? 0),
+    imageUrl: resolvedImg,
+    category: resolvedCategory,
     imageSize: (row.image_size || '500x500') as ImageSizeOption,
-    description: row.description || '',
-    manufacturedDate: row.manufactured_date || '',
+    description: row.description || row.descricao || '',
+    manufacturedDate: resolvedDate,
     redirectUrl: row.redirect_url || '',
-    createdAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
+    createdAt: createdRaw ? new Date(createdRaw).toISOString() : undefined,
   };
 }
 
@@ -505,18 +716,42 @@ export async function createProduct(input: {
 }): Promise<Product> {
   try {
     const db = await getDb();
+    const cleanName = input.name.trim();
+    const cleanPrice = Number(input.price);
+    const cleanDesc = input.description?.trim() || '';
+    const cleanDate = input.manufacturedDate?.trim() || '';
+
+    if (hasLegacyPortugueseColumns) {
+      const res = await db.query(
+        `INSERT INTO products (name, nome, price, preco, image_url, imagem_url, category, image_size, description, descricao, manufactured_date, redirect_url)
+         VALUES ($1::text, $1::varchar, $2::numeric, $2::numeric, $3::text, $3::text, $4::text, $5::text, $6::text, $6::text, $7::text, $8::text)
+         RETURNING *`,
+        [
+          cleanName,
+          cleanPrice,
+          input.imageUrl,
+          input.category || 'Doces',
+          input.imageSize || '500x500',
+          cleanDesc,
+          cleanDate,
+          input.redirectUrl?.trim() || '',
+        ]
+      );
+      return mapProductRow(res.rows[0]);
+    }
+
     const res = await db.query(
       `INSERT INTO products (name, price, image_url, category, image_size, description, manufactured_date, redirect_url)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
       [
-        input.name.trim(),
-        Number(input.price),
+        cleanName,
+        cleanPrice,
         input.imageUrl,
         input.category || 'Doces',
         input.imageSize || '500x500',
-        input.description?.trim() || '',
-        input.manufacturedDate?.trim() || '',
+        cleanDesc,
+        cleanDate,
         input.redirectUrl?.trim() || '',
       ]
     );
@@ -542,6 +777,44 @@ export async function updateProduct(
 ): Promise<Product | null> {
   try {
     const db = await getDb();
+    const cleanName = input.name.trim();
+    const cleanPrice = Number(input.price);
+    const cleanDesc = input.description?.trim() || '';
+    const cleanDate = input.manufacturedDate?.trim() || '';
+
+    if (hasLegacyPortugueseColumns) {
+      const res = await db.query(
+        `UPDATE products
+         SET name = $1::text,
+             nome = $1::varchar,
+             price = $2::numeric,
+             preco = $2::numeric,
+             image_url = $3::text,
+             imagem_url = $3::text,
+             category = $4::text,
+             image_size = $5::text,
+             description = $6::text,
+             descricao = $6::text,
+             manufactured_date = $7::text,
+             redirect_url = $8::text
+         WHERE id = $9
+         RETURNING *`,
+        [
+          cleanName,
+          cleanPrice,
+          input.imageUrl,
+          input.category || 'Doces',
+          input.imageSize || '500x500',
+          cleanDesc,
+          cleanDate,
+          input.redirectUrl?.trim() || '',
+          id,
+        ]
+      );
+      if (!res.rows[0]) return null;
+      return mapProductRow(res.rows[0]);
+    }
+
     const res = await db.query(
       `UPDATE products
        SET name = $1,
@@ -555,13 +828,13 @@ export async function updateProduct(
        WHERE id = $9
        RETURNING *`,
       [
-        input.name.trim(),
-        Number(input.price),
+        cleanName,
+        cleanPrice,
         input.imageUrl,
         input.category || 'Doces',
         input.imageSize || '500x500',
-        input.description?.trim() || '',
-        input.manufacturedDate?.trim() || '',
+        cleanDesc,
+        cleanDate,
         input.redirectUrl?.trim() || '',
         id,
       ]

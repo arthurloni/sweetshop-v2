@@ -1,7 +1,8 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import {
   listProducts,
   createProduct,
@@ -11,16 +12,79 @@ import {
   createFeedback,
   updateFeedback,
   deleteFeedback,
-} from './src/db/postgres.ts';
+  findAdminByUsername,
+} from './src/db/postgres';
+import {
+  createAdminToken,
+  extractTokenFromRequest,
+  requireAdminAuth,
+  verifyAdminToken,
+  verifyPassword,
+} from './src/auth/security';
 
 dotenv.config();
 
-async function startServer() {
+export function createApp() {
   const app = express();
-  const PORT = 3000;
 
   // Increase JSON limit to support adaptive resized product images (500x500, 800x800, 700x900)
   app.use(express.json({ limit: '15mb' }));
+
+  // ============================================================================
+  // ADMINISTRATOR AUTHENTICATION & SESSION API
+  // ============================================================================
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body || {};
+      if (!username || String(username).trim() === '' || !password || String(password) === '') {
+        return res.status(400).json({ error: 'Informe o nome de usuário e a senha.' });
+      }
+
+      const admin = await findAdminByUsername(String(username).trim());
+      if (!admin || !verifyPassword(String(password), admin.passwordHash)) {
+        return res.status(401).json({ error: 'Usuário ou senha inválidos.' });
+      }
+
+      const token = createAdminToken({ id: admin.id, username: admin.username });
+      res.setHeader(
+        'Set-Cookie',
+        `meudoce_session=${encodeURIComponent(token)}; HttpOnly; Path=/; Max-Age=${8 * 3600}; SameSite=Lax`
+      );
+
+      res.json({
+        token,
+        admin: {
+          id: admin.id,
+          username: admin.username,
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao autenticar administrador.' });
+    }
+  });
+
+  app.post('/api/auth/logout', (_req, res) => {
+    res.setHeader(
+      'Set-Cookie',
+      'meudoce_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax'
+    );
+    res.json({ success: true });
+  });
+
+  app.get('/api/auth/me', (req, res) => {
+    const token = extractTokenFromRequest(req);
+    const session = verifyAdminToken(token);
+    if (!session) {
+      return res.status(401).json({ authenticated: false });
+    }
+    res.json({
+      authenticated: true,
+      admin: {
+        id: session.sub,
+        username: session.username,
+      },
+    });
+  });
 
   // ============================================================================
   // PRODUCTS CRUD API (PostgreSQL)
@@ -34,7 +98,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/products', async (req, res) => {
+  app.post('/api/products', requireAdminAuth, async (req, res) => {
     try {
       const {
         name,
@@ -75,7 +139,7 @@ async function startServer() {
     }
   });
 
-  app.put('/api/products/:id', async (req, res) => {
+  app.put('/api/products/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (isNaN(id)) {
@@ -124,7 +188,7 @@ async function startServer() {
     }
   });
 
-  app.delete('/api/products/:id', async (req, res) => {
+  app.delete('/api/products/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       if (isNaN(id)) {
@@ -154,6 +218,7 @@ async function startServer() {
     }
   });
 
+  // Public route: visitors can submit ratings (1..5) and comments
   app.post('/api/feedbacks', async (req, res) => {
     try {
       const { authorName, rating, comment } = req.body;
@@ -176,7 +241,8 @@ async function startServer() {
     }
   });
 
-  app.put('/api/feedbacks/:id', async (req, res) => {
+  // Admin-only routes: moderation (edit / delete feedback)
+  app.put('/api/feedbacks/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const { authorName, rating, comment } = req.body;
@@ -201,7 +267,7 @@ async function startServer() {
     }
   });
 
-  app.delete('/api/feedbacks/:id', async (req, res) => {
+  app.delete('/api/feedbacks/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const deleted = await deleteFeedback(id);
@@ -215,25 +281,49 @@ async function startServer() {
   });
 
   // ============================================================================
-  // VITE MIDDLEWARE / PRODUCTION ASSETS
+  // STATIC ASSETS & ANGULAR SPA HOSTING
   // ============================================================================
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+  const publicDir = path.join(process.cwd(), 'public');
+  if (fs.existsSync(publicDir)) {
+    app.use(express.static(publicDir));
+  }
+
+  const angularBrowserDist = path.join(process.cwd(), 'dist', 'browser');
+  const legacyDist = path.join(process.cwd(), 'dist');
+  const activeDist = fs.existsSync(angularBrowserDist) ? angularBrowserDist : legacyDist;
+
+  if (fs.existsSync(activeDist)) {
+    app.use(express.static(activeDist));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next();
+      const indexFile = path.join(activeDist, 'index.html');
+      if (fs.existsSync(indexFile)) {
+        res.sendFile(indexFile);
+      } else {
+        next();
+      }
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Meu Doce server running on http://localhost:${PORT}`);
-  });
+  return app;
 }
 
-startServer();
+const isDirectExecution =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+
+if (isDirectExecution) {
+  const PORT = Number(process.env.PORT || 3000);
+  // Trigger DB & Admin initialization on startup
+  listProducts()
+    .then(() => {
+      const app = createApp();
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Meu Doce (Angular + Express + PostgreSQL) rodando em http://localhost:${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error('Falha ao inicializar banco PostgreSQL:', err);
+      process.exit(1);
+    });
+}
