@@ -1,6 +1,8 @@
 # SweetShop — Meu Doce Doceria Artesanal
 
-🌐 Read in: [English](README-EN.md) | 🌐 Leia em: [Português](README-PT.md)
+🌐 Read in: [English](README-EN.md)
+
+🌐 Leia em: [Português](README-PT.md)
 
 This project was built to meet the needs of a growing artisanal sweets shop (**Meu Doce — Doceria Artesanal**). The application uses **JavaScript, TypeScript, Angular (v19 LTS), and Bootstrap 5** on the frontend, integrated with a **Node.js + Express** backend and **PostgreSQL** database.
 
