@@ -3,7 +3,7 @@ import pg from 'pg';
 import path from 'path';
 import fs from 'fs';
 import { createPatisserieSvgDataUri } from '../utils/imageCanvas';
-import { AdminUser, Feedback, ImageSizeOption, Product, ProductCategory } from '../types';
+import { AdminUser, Feedback, FlyerMenuItem, ImageSizeOption, Product, ProductCategory } from '../types';
 import { hashPassword } from '../auth/security';
 
 const { Pool } = pg;
@@ -556,6 +556,35 @@ async function initializeSchemaAndSeed(executor: SqlExecutor) {
   }
 
   // Bootstrap initial administrator from environment variables if configured
+  // Migration 004: Official menu board lines (flyer_items) editable by administrator
+  if (!(await hasMigration(executor, '004_create_flyer_items_table'))) {
+    await executor.exec(`
+      CREATE TABLE IF NOT EXISTS flyer_items (
+        id SERIAL PRIMARY KEY,
+        category TEXT NOT NULL DEFAULT 'Doces',
+        name TEXT NOT NULL,
+        price NUMERIC(10, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await recordMigration(executor, '004_create_flyer_items_table');
+  }
+
+  // Seed flyer_items only if table is completely empty
+  const flyerCountRes = await executor.query<{ count: string | number }>(
+    'SELECT COUNT(*) as count FROM flyer_items'
+  );
+  const flyerCount = Number(flyerCountRes.rows[0]?.count || 0);
+
+  if (flyerCount === 0) {
+    for (const item of INITIAL_PRODUCTS_SEED) {
+      await executor.query(
+        `INSERT INTO flyer_items (category, name, price) VALUES ($1, $2, $3)`,
+        [item.category, item.name, item.price]
+      );
+    }
+  }
+
   await bootstrapAdminFromEnv(executor);
 }
 
@@ -926,5 +955,85 @@ export async function deleteFeedback(id: number): Promise<boolean> {
   } catch (error) {
     console.error('Database query failed in deleteFeedback:', error);
     throw new Error('Falha ao excluir avaliação no banco PostgreSQL.', { cause: error });
+  }
+}
+
+
+function mapFlyerItemRow(row: any): FlyerMenuItem {
+  return {
+    id: Number(row.id),
+    category: (row.category || 'Doces') as ProductCategory,
+    name: String(row.name || ''),
+    price: Number(row.price ?? 0),
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
+  };
+}
+
+export async function listFlyerItems(): Promise<FlyerMenuItem[]> {
+  try {
+    const db = await getDb();
+    const res = await db.query('SELECT * FROM flyer_items ORDER BY id ASC');
+    return res.rows.map(mapFlyerItemRow);
+  } catch (error) {
+    console.error('Database query failed in listFlyerItems:', error);
+    throw new Error('Falha ao carregar itens dos encartes no banco PostgreSQL.', { cause: error });
+  }
+}
+
+export async function createFlyerItem(input: {
+  category: ProductCategory;
+  name: string;
+  price: number;
+}): Promise<FlyerMenuItem> {
+  try {
+    const db = await getDb();
+    const res = await db.query(
+      `INSERT INTO flyer_items (category, name, price)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [input.category || 'Doces', input.name.trim(), Number(input.price)]
+    );
+    return mapFlyerItemRow(res.rows[0]);
+  } catch (error) {
+    console.error('Database query failed in createFlyerItem:', error);
+    throw new Error('Falha ao adicionar linha ao encarte no banco PostgreSQL.', { cause: error });
+  }
+}
+
+export async function updateFlyerItem(
+  id: number,
+  input: {
+    category?: ProductCategory;
+    name: string;
+    price: number;
+  }
+): Promise<FlyerMenuItem | null> {
+  try {
+    const db = await getDb();
+    const res = await db.query(
+      `UPDATE flyer_items
+       SET name = $1,
+           price = $2,
+           category = COALESCE($3, category)
+       WHERE id = $4
+       RETURNING *`,
+      [input.name.trim(), Number(input.price), input.category || null, id]
+    );
+    if (!res.rows[0]) return null;
+    return mapFlyerItemRow(res.rows[0]);
+  } catch (error) {
+    console.error('Database query failed in updateFlyerItem:', error);
+    throw new Error('Falha ao atualizar linha do encarte no banco PostgreSQL.', { cause: error });
+  }
+}
+
+export async function deleteFlyerItem(id: number): Promise<boolean> {
+  try {
+    const db = await getDb();
+    const res = await db.query('DELETE FROM flyer_items WHERE id = $1 RETURNING id', [id]);
+    return res.rows.length > 0;
+  } catch (error) {
+    console.error('Database query failed in deleteFlyerItem:', error);
+    throw new Error('Falha ao remover linha do encarte no banco PostgreSQL.', { cause: error });
   }
 }

@@ -44,6 +44,14 @@ export interface OfficialFlyer {
   url: string;
 }
 
+export interface FlyerMenuItem {
+  id: number;
+  category: ProductCategory;
+  name: string;
+  price: number;
+  createdAt?: string;
+}
+
 export const IMAGE_SIZE_CONFIG: Record<
   ImageSizeOption,
   {

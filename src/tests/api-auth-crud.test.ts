@@ -7,6 +7,7 @@ import {
   ensureAdminAccount,
   listAppliedMigrations,
   listFeedbacks,
+  listFlyerItems,
   listProducts,
 } from '../db/postgres';
 import { createPatisserieSvgDataUri } from '../utils/imageCanvas';
@@ -229,6 +230,49 @@ async function runTests() {
     });
     assert.equal(deleteFbRes.status, 200);
     console.log('✔ Publicação pública e moderação administrativa de avaliações aprovadas.');
+
+    // 6.1 Testar CRUD das linhas dos Encartes Oficiais (/api/flyer-items)
+    const initialFlyers = await listFlyerItems();
+    assert.ok(initialFlyers.length >= 1, 'Esperado itens nos encartes oficiais');
+
+    const getFlyersRes = await fetch(`${baseUrl}/api/flyer-items`);
+    assert.equal(getFlyersRes.status, 200);
+    const flyersJson = await getFlyersRes.json();
+    assert.equal(flyersJson.length, initialFlyers.length);
+
+    const unauthPostFlyer = await fetch(`${baseUrl}/api/flyer-items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: 'Doces', name: 'Linha Invasora', price: 10 }),
+    });
+    assert.equal(unauthPostFlyer.status, 401);
+
+    const createFlyerRes = await fetch(`${baseUrl}/api/flyer-items`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ category: 'Doces', name: 'Brigadeiro Pistache Teste', price: 14.0 }),
+    });
+    assert.equal(createFlyerRes.status, 201);
+    const createdFlyer = await createFlyerRes.json();
+    assert.equal(createdFlyer.name, 'Brigadeiro Pistache Teste');
+    assert.equal(createdFlyer.price, 14);
+
+    const updateFlyerRes = await fetch(`${baseUrl}/api/flyer-items/${createdFlyer.id}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ category: 'Doces', name: 'Brigadeiro Pistache Especial', price: 16.5 }),
+    });
+    assert.equal(updateFlyerRes.status, 200);
+    const updatedFlyer = await updateFlyerRes.json();
+    assert.equal(updatedFlyer.name, 'Brigadeiro Pistache Especial');
+    assert.equal(updatedFlyer.price, 16.5);
+
+    const deleteFlyerRes = await fetch(`${baseUrl}/api/flyer-items/${createdFlyer.id}`, {
+      method: 'DELETE',
+      headers: authHeaders,
+    });
+    assert.equal(deleteFlyerRes.status, 200);
+    console.log('✔ CRUD das linhas dos encartes oficiais (/api/flyer-items) aprovado.');
 
     // 7. Testar roteamento SPA Angular (/, /cardapio) e assets oficiais (Logo e Cardápios 01, 02, 03)
     const homeRes = await fetch(`${baseUrl}/`);

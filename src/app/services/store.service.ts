@@ -3,6 +3,7 @@ import {
   AdminUser,
   CartItem,
   Feedback,
+  FlyerMenuItem,
   ImageSizeOption,
   OfficialFlyer,
   Product,
@@ -16,8 +17,9 @@ const SESSION_TOKEN_KEY = 'meudoce_admin_token_v1';
   providedIn: 'root',
 })
 export class StoreService {
-  // Catalog & Feedbacks State
+  // Catalog, Flyer Menu Lines & Feedbacks State
   readonly products = signal<Product[]>([]);
+  readonly flyerItems = signal<FlyerMenuItem[]>([]);
   readonly feedbacks = signal<Feedback[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly errorBanner = signal<string | null>(null);
@@ -119,17 +121,21 @@ export class StoreService {
     this.isLoading.set(true);
     this.errorBanner.set(null);
     try {
-      const [prodRes, fbRes] = await Promise.all([
+      const [prodRes, fbRes, flyerRes] = await Promise.all([
         fetch('/api/products'),
         fetch('/api/feedbacks'),
+        fetch('/api/flyer-items'),
       ]);
       if (!prodRes.ok) throw new Error('Não foi possível carregar o cardápio.');
       if (!fbRes.ok) throw new Error('Não foi possível carregar as avaliações.');
+      if (!flyerRes.ok) throw new Error('Não foi possível carregar os encartes oficiais.');
 
       const prodsData: Product[] = await prodRes.json();
       const fbsData: Feedback[] = await fbRes.json();
+      const flyersData: FlyerMenuItem[] = await flyerRes.json();
       this.products.set(prodsData);
       this.feedbacks.set(fbsData);
+      this.flyerItems.set(flyersData);
     } catch (err: any) {
       this.errorBanner.set(err.message || 'Erro ao comunicar com o servidor.');
     } finally {
@@ -148,7 +154,7 @@ export class StoreService {
       });
       if (!res.ok) {
         this.currentAdmin.set(null);
-      this.selectedSizeFilter.set('Todos');
+        this.selectedSizeFilter.set('Todos');
         sessionStorage.removeItem(SESSION_TOKEN_KEY);
         return false;
       }
@@ -349,6 +355,76 @@ export class StoreService {
       this.removeFromCart(product.id);
       this.showToast(`Produto "${product.name}" removido do cardápio.`);
     }
+  }
+
+  // ============================================================================
+  // OFFICIAL MENU BOARD LINES (FLYER ITEMS) CRUD METHODS (Admin Auth)
+  // ============================================================================
+  async addFlyerItem(input: {
+    category: ProductCategory;
+    name: string;
+    price: number;
+  }): Promise<void> {
+    const res = await fetch('/api/flyer-items', {
+      method: 'POST',
+      headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'same-origin',
+      body: JSON.stringify(input),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) {
+        this.currentAdmin.set(null);
+        this.isLoginModalOpen.set(true);
+      }
+      throw new Error(data.error || 'Erro ao adicionar linha no encarte.');
+    }
+    this.flyerItems.update((prev) => [...prev, data]);
+    this.showToast(`Linha "${data.name}" adicionada ao encarte de ${data.category}!`);
+  }
+
+  async updateFlyerItem(
+    id: number,
+    input: {
+      category?: ProductCategory;
+      name: string;
+      price: number;
+    }
+  ): Promise<void> {
+    const res = await fetch(`/api/flyer-items/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'same-origin',
+      body: JSON.stringify(input),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) {
+        this.currentAdmin.set(null);
+        this.isLoginModalOpen.set(true);
+      }
+      throw new Error(data.error || 'Erro ao atualizar linha do encarte.');
+    }
+    this.flyerItems.update((prev) => prev.map((item) => (item.id === id ? data : item)));
+    this.showToast(`Linha "${data.name}" atualizada no encarte!`);
+  }
+
+  async deleteFlyerItem(id: number): Promise<void> {
+    const res = await fetch(`/api/flyer-items/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+      credentials: 'same-origin',
+    });
+    if (!res.ok) {
+      if (res.status === 401) {
+        this.currentAdmin.set(null);
+        this.isLoginModalOpen.set(true);
+      }
+      this.showToast('Acesso restrito a administradores.');
+      return;
+    }
+    this.flyerItems.update((prev) => prev.filter((item) => item.id !== id));
+    this.showToast('Linha removida do encarte com sucesso.');
   }
 
   // ============================================================================

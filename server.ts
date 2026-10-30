@@ -13,6 +13,10 @@ import {
   updateFeedback,
   deleteFeedback,
   findAdminByUsername,
+  listFlyerItems,
+  createFlyerItem,
+  updateFlyerItem,
+  deleteFlyerItem,
 } from './src/db/postgres';
 import {
   createAdminToken,
@@ -281,6 +285,89 @@ export function createApp() {
   });
 
   // ============================================================================
+  // ============================================================================
+  // OFFICIAL MENU BOARD LINES (FLYER ITEMS) CRUD API (PostgreSQL)
+  // ============================================================================
+  app.get('/api/flyer-items', async (_req, res) => {
+    try {
+      const items = await listFlyerItems();
+      res.json(items);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao carregar linhas dos encartes.' });
+    }
+  });
+
+  app.post('/api/flyer-items', requireAdminAuth, async (req, res) => {
+    try {
+      const { category, name, price } = req.body || {};
+      if (!name || String(name).trim() === '') {
+        return res.status(400).json({ error: 'O nome do item da linha é obrigatório.' });
+      }
+      if (price === undefined || price === null || isNaN(Number(price)) || Number(price) <= 0) {
+        return res.status(400).json({ error: 'O preço da linha é obrigatório e deve ser maior que zero.' });
+      }
+
+      const created = await createFlyerItem({
+        category: category || 'Doces',
+        name: String(name).trim(),
+        price: Number(price),
+      });
+
+      res.status(201).json(created);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao adicionar linha no encarte.' });
+    }
+  });
+
+  app.put('/api/flyer-items/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID inválido.' });
+      }
+
+      const { category, name, price } = req.body || {};
+      if (!name || String(name).trim() === '') {
+        return res.status(400).json({ error: 'O nome do item da linha é obrigatório.' });
+      }
+      if (price === undefined || price === null || isNaN(Number(price)) || Number(price) <= 0) {
+        return res.status(400).json({ error: 'O preço da linha é obrigatório e deve ser maior que zero.' });
+      }
+
+      const updated = await updateFlyerItem(id, {
+        category,
+        name: String(name).trim(),
+        price: Number(price),
+      });
+
+      if (!updated) {
+        return res.status(404).json({ error: 'Linha do encarte não encontrada.' });
+      }
+
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao editar linha do encarte.' });
+    }
+  });
+
+  app.delete('/api/flyer-items/:id', requireAdminAuth, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID inválido.' });
+      }
+
+      const deleted = await deleteFlyerItem(id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Linha do encarte não encontrada.' });
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || 'Erro ao remover linha do encarte.' });
+    }
+  });
+
   // STATIC ASSETS & ANGULAR SPA HOSTING
   // ============================================================================
   const publicDir = path.join(process.cwd(), 'public');
