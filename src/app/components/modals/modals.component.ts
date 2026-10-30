@@ -38,7 +38,7 @@ import {
                 ACESSO RESTRITO
               </span>
               <h3 class="h5 font-serif-editorial fw-bold text-meudoce-dark mb-0">
-                🔒 Autenticação Administrativa
+                Autenticação Administrativa
               </h3>
             </div>
             <button
@@ -301,7 +301,6 @@ import {
           >
             <div>
               <span class="tracking-editorial text-meudoce-pink d-block">
-                PAINEL CRUD · POSTGRESQL
               </span>
               <h3 class="h5 font-serif-editorial fw-bold text-meudoce-dark mb-0">
                 {{
@@ -439,19 +438,6 @@ import {
                       [ngModel]="formManufacturedDate()"
                       (ngModelChange)="formManufacturedDate.set($event)"
                       class="form-control rounded-3 small font-mono-tabular"
-                    />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <label class="form-label small fw-semibold text-meudoce-dark">
-                      Link externo (opcional)
-                    </label>
-                    <input
-                      type="url"
-                      name="prodRedirect"
-                      [ngModel]="formRedirectUrl()"
-                      (ngModelChange)="formRedirectUrl.set($event)"
-                      placeholder="Padrão: WhatsApp/iFood"
-                      class="form-control rounded-3 small"
                     />
                   </div>
                 </div>

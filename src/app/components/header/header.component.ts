@@ -22,7 +22,7 @@ import { STORE_INFO } from '../../../types';
             class="rounded-circle border border-meudoce object-cover"
             style="width: 38px; height: 38px;"
           />
-          <span class="fs-4 font-serif-editorial fw-bold">Meu Doce</span>
+          <span class="fs-4 font-serif-editorial fw-bold">Doce doceria</span>
         </a>
 
         <!-- Zone 2: Navigation Links -->
@@ -88,7 +88,7 @@ import { STORE_INFO } from '../../../types';
               (click)="store.isLoginModalOpen.set(true)"
               class="btn btn-sm btn-outline-meudoce rounded-pill px-3 py-2"
             >
-              🔒 Área Admin
+              Admin 🔒
             </button>
           }
 

@@ -39,8 +39,6 @@ export interface OfficialFlyer {
   category: ProductCategory;
   title: string;
   subtitle: string;
-  highlights: string[];
-  priceRange: string;
   url: string;
 }
 
@@ -89,49 +87,28 @@ export const OFFICIAL_MENU_FLYERS: OfficialFlyer[] = [
   {
     id: 'cardapio-doces',
     category: 'Doces',
-    title: 'Cardápio Oficial — Doces Artesanais',
+    title: 'Doces Artesanais',
     subtitle: 'Receitas clássicas e autorais feitas diariamente com chocolate nobre e frutas frescas.',
-    highlights: [
-      'Copos e Potinhos da Felicidade (R$ 10 a R$ 15)',
-      'Bolos no Pote, Fatias Confeitadas e Mini Pudim (R$ 12 a R$ 20)',
-      'Brownies Tradicional, Recheado e na Fatia (R$ 12 a R$ 18)',
-      'Coxinhas de Morango, Cones Trufados, Pão de Mel, Bombons e Trufas (R$ 4,50 a R$ 15)',
-    ],
-    priceRange: 'A partir de R$ 4,50',
     url: '/assets/CARDAPIO01_1efd2637.jpeg',
   },
   {
     id: 'cardapio-salgados',
     category: 'Salgados',
-    title: 'Cardápio Oficial — Salgados Assados & Tortas',
+    title: 'Salgados Assados & Tortas',
     subtitle: 'Massas leves e amanteigadas com recheios cremosos e tempero caseiro.',
-    highlights: [
-      'Salgados Assados na hora (R$ 10,00)',
-      'Empada Artesanal de Carne Seca com Requeijão (R$ 10,00)',
-      'Empada Cremosa de Frango (R$ 10,00)',
-      'Torta Fria Especial de Frango (R$ 15,00)',
-    ],
-    priceRange: 'De R$ 10,00 a R$ 15,00',
     url: '/assets/CARDAPIO02_e94365ca.jpeg',
   },
   {
     id: 'cardapio-bebidas',
     category: 'Bebidas',
-    title: 'Cardápio Oficial — Cafés & Bebidas',
+    title: 'Cafés & Bebidas',
     subtitle: 'Cafés especiais tirados na hora, chocolate quente cremoso, sucos naturais e bebidas geladas.',
-    highlights: [
-      'Café Coado, Expresso e Café com Leite (R$ 5,00 a R$ 7,00)',
-      'Capuccino Cremoso e Chocolate Quente Europeu (R$ 10,00 a R$ 18,00)',
-      'Suco Natural de Morango, Copo 200ml e Jarra 1L (R$ 6,00 a R$ 12,00)',
-      'Água Mineral (com/sem gás) e Refrigerantes 220ml, 310ml e 1,5L (R$ 5,00 a R$ 12,00)',
-    ],
-    priceRange: 'De R$ 5,00 a R$ 18,00',
     url: '/assets/CARDAPIO03_9fa23d90.jpeg',
   },
 ];
 
 export const STORE_INFO = {
-  name: 'Meu Doce',
+  name: 'Doce doceria',
   subtitle: 'DOCERIA ARTESANAL',
   logoUrl: '/assets/LOGO_465ec8e3.jpeg',
   icons: {

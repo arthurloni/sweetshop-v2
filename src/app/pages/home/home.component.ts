@@ -74,18 +74,6 @@ import { StoreMapSectionComponent } from '../../components/store-map-section/sto
                 Carrinho ({{ store.totalCartCount() }})
               </button>
             </div>
-
-            <!-- Location & Delivery Info Indicator -->
-            <div class="pt-4 mt-2 d-flex align-items-center gap-3">
-              <div>
-                <p class="small text-meudoce-muted mb-0">
-                  Encomendas e pronta entrega
-                </p>
-                <p class="small fw-bold text-meudoce-dark mb-0">
-                  {{ storeInfo.address }}
-                </p>
-              </div>
-            </div>
           </div>
 
           <!-- Right Column: Official Circular Logo & Soft Blush Composition -->

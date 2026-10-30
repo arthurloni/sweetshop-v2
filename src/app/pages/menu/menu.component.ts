@@ -301,7 +301,7 @@ import { downloadProductImage } from '../../../utils/imageCanvas';
 })
 export class MenuComponent {
   readonly store = inject(StoreService);
-  readonly categories = ['Doces', 'Salgados', 'Bebidas', 'Todos'] as const;
+  readonly categories = ['Todos', 'Salgados', 'Bebidas', 'Doces'] as const;
   readonly sizeFilters = ['Todos', '500x500', '800x800', '700x900'] as const;
 
   getSizeConfig(size: ImageSizeOption) {

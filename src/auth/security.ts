@@ -135,7 +135,7 @@ export function requireAdminAuth(req: Request, res: Response, next: NextFunction
 
   if (!session) {
     return res.status(401).json({
-      error: 'Acesso não autorizado. Faça login como administrador para realizar esta ação.',
+      error: 'Acesso não autorizado.',
     });
   }
 
