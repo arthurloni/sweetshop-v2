@@ -10,6 +10,14 @@ import {
   ProductCategory,
 } from '../../types';
 
+const API_BASE_URL =
+  window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+    ? ''
+    : 'https://SUA-URL-DO-RENDER';
+
+const apiUrl = (path: string): string => `${API_BASE_URL}${path}`;
+
 const CART_STORAGE_KEY = 'meudoce_cart_v1';
 const SESSION_TOKEN_KEY = 'meudoce_admin_token_v1';
 
@@ -122,9 +130,9 @@ export class StoreService {
     this.errorBanner.set(null);
     try {
       const [prodRes, fbRes, flyerRes] = await Promise.all([
-        fetch('/api/products'),
-        fetch('/api/feedbacks'),
-        fetch('/api/flyer-items'),
+        fetch(apiUrl('/api/products')),
+        fetch(apiUrl('/api/feedbacks')),
+        fetch(apiUrl('/api/flyer-items')),
       ]);
       if (!prodRes.ok) throw new Error('Não foi possível carregar o cardápio.');
       if (!fbRes.ok) throw new Error('Não foi possível carregar as avaliações.');
@@ -148,9 +156,9 @@ export class StoreService {
   // ============================================================================
   async verifySessionWithServer(): Promise<boolean> {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(apiUrl('/api/auth/me'), {
         headers: this.getAuthHeaders(),
-        credentials: 'same-origin',
+        credentials: 'include',
       });
       if (!res.ok) {
         this.currentAdmin.set(null);
@@ -172,10 +180,10 @@ export class StoreService {
   }
 
   async loginAdmin(username: string, password: string): Promise<void> {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(apiUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
+      credentials: 'include',
       body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
@@ -196,10 +204,10 @@ export class StoreService {
 
   async logoutAdmin(): Promise<void> {
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(apiUrl('/api/auth/logout'), {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        credentials: 'same-origin',
+        credentials: 'include',
       });
     } finally {
       try {
@@ -292,10 +300,10 @@ export class StoreService {
   }): Promise<void> {
     const editing = this.editingProduct();
     if (editing) {
-      const res = await fetch(`/api/products/${editing.id}`, {
+      const res = await fetch(apiUrl(`/api/products/${editing.id}`), {
         method: 'PUT',
         headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
-        credentials: 'same-origin',
+        credentials: 'include',
         body: JSON.stringify(input),
       });
       const data = await res.json();
@@ -314,10 +322,10 @@ export class StoreService {
       this.persistCart(updatedCart);
       this.showToast(`Produto "${data.name}" atualizado com sucesso!`);
     } else {
-      const res = await fetch('/api/products', {
+      const res = await fetch(apiUrl('/api/products'), {
         method: 'POST',
         headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
-        credentials: 'same-origin',
+        credentials: 'include',
         body: JSON.stringify(input),
       });
       const data = await res.json();
@@ -339,10 +347,10 @@ export class StoreService {
       this.isLoginModalOpen.set(true);
       return;
     }
-    const res = await fetch(`/api/products/${product.id}`, {
+    const res = await fetch(apiUrl(`/api/products/${product.id}`), {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
-      credentials: 'same-origin',
+      credentials: 'include',
     });
     if (res.status === 401) {
       this.currentAdmin.set(null);
@@ -365,10 +373,10 @@ export class StoreService {
     name: string;
     price: number;
   }): Promise<void> {
-    const res = await fetch('/api/flyer-items', {
+    const res = await fetch(apiUrl('/api/flyer-items'), {
       method: 'POST',
       headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
-      credentials: 'same-origin',
+      credentials: 'include',
       body: JSON.stringify(input),
     });
     const data = await res.json();
@@ -391,10 +399,10 @@ export class StoreService {
       price: number;
     }
   ): Promise<void> {
-    const res = await fetch(`/api/flyer-items/${id}`, {
+    const res = await fetch(apiUrl(`/api/flyer-items/${id}`), {
       method: 'PUT',
       headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
-      credentials: 'same-origin',
+      credentials: 'include',
       body: JSON.stringify(input),
     });
     const data = await res.json();
@@ -410,10 +418,10 @@ export class StoreService {
   }
 
   async deleteFlyerItem(id: number): Promise<void> {
-    const res = await fetch(`/api/flyer-items/${id}`, {
+    const res = await fetch(apiUrl(`/api/flyer-items/${id}`), {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
-      credentials: 'same-origin',
+      credentials: 'include',
     });
     if (!res.ok) {
       if (res.status === 401) {
@@ -435,7 +443,7 @@ export class StoreService {
     rating: number;
     comment: string;
   }): Promise<void> {
-    const res = await fetch('/api/feedbacks', {
+    const res = await fetch(apiUrl('/api/feedbacks'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
@@ -452,10 +460,10 @@ export class StoreService {
     id: number,
     input: { authorName: string; rating: number; comment: string }
   ): Promise<void> {
-    const res = await fetch(`/api/feedbacks/${id}`, {
+    const res = await fetch(apiUrl(`/api/feedbacks/${id}`), {
       method: 'PUT',
       headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
-      credentials: 'same-origin',
+      credentials: 'include',
       body: JSON.stringify(input),
     });
     const data = await res.json();
@@ -471,10 +479,10 @@ export class StoreService {
   }
 
   async deleteFeedback(id: number): Promise<void> {
-    const res = await fetch(`/api/feedbacks/${id}`, {
+    const res = await fetch(apiUrl(`/api/feedbacks/${id}`), {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
-      credentials: 'same-origin',
+      credentials: 'include',
     });
     if (!res.ok) {
       if (res.status === 401) {

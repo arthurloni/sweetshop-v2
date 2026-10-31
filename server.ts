@@ -28,8 +28,42 @@ import {
 
 dotenv.config();
 
+const allowedOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 export function createApp() {
   const app = express();
+
+  // CORS: permite que o frontend hospedado externamente acesse a API.
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader(
+        'Access-Control-Allow-Methods',
+        'GET, POST, PUT, DELETE, OPTIONS'
+      );
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization'
+      );
+    }
+
+    if (req.method === 'OPTIONS') {
+      if (origin && !allowedOrigins.includes(origin)) {
+        return res.sendStatus(403);
+      }
+
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
 
   // Increase JSON limit to support adaptive resized product images (500x500, 800x800, 700x900)
   app.use(express.json({ limit: '15mb' }));
@@ -52,7 +86,7 @@ export function createApp() {
       const token = createAdminToken({ id: admin.id, username: admin.username });
       res.setHeader(
         'Set-Cookie',
-        `meudoce_session=${encodeURIComponent(token)}; HttpOnly; Path=/; Max-Age=${8 * 3600}; SameSite=Lax`
+        `meudoce_session=${encodeURIComponent(token)}; HttpOnly; Secure; Path=/; Max-Age=${8 * 3600}; SameSite=None`
       );
 
       res.json({
@@ -63,14 +97,14 @@ export function createApp() {
         },
       });
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao autenticar administrador.' });
+      res.status(500).json({ error: console.error || 'Erro ao autenticar administrador.' });
     }
   });
 
   app.post('/api/auth/logout', (_req, res) => {
     res.setHeader(
       'Set-Cookie',
-      'meudoce_session=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax'
+      'meudoce_session=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None'
     );
     res.json({ success: true });
   });
@@ -98,7 +132,7 @@ export function createApp() {
       const products = await listProducts();
       res.json(products);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao listar produtos.' });
+      res.status(500).json({ error: console.error || 'Erro ao listar produtos.' });
     }
   });
 
@@ -139,7 +173,7 @@ export function createApp() {
 
       res.status(201).json(created);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao cadastrar produto.' });
+      res.status(500).json({ error: console.error || 'Erro ao cadastrar produto.' });
     }
   });
 
@@ -188,7 +222,7 @@ export function createApp() {
 
       res.json(updated);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao atualizar produto.' });
+      res.status(500).json({ error: console.error || 'Erro ao atualizar produto.' });
     }
   });
 
@@ -206,7 +240,7 @@ export function createApp() {
 
       res.json({ success: true });
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao excluir produto.' });
+      res.status(500).json({ error: console.error || 'Erro ao excluir produto.' });
     }
   });
 
@@ -218,7 +252,7 @@ export function createApp() {
       const feedbacks = await listFeedbacks();
       res.json(feedbacks);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao carregar avaliações.' });
+      res.status(500).json({ error: console.error || 'Erro ao carregar avaliações.' });
     }
   });
 
@@ -241,7 +275,7 @@ export function createApp() {
 
       res.status(201).json(created);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao publicar avaliação.' });
+      res.status(500).json({ error: console.error || 'Erro ao publicar avaliação.' });
     }
   });
 
@@ -267,7 +301,7 @@ export function createApp() {
 
       res.json(updated);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao editar avaliação.' });
+      res.status(500).json({ error: console.error || 'Erro ao editar avaliação.' });
     }
   });
 
@@ -280,20 +314,20 @@ export function createApp() {
       }
       res.json({ success: true });
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao apagar avaliação.' });
+      res.status(500).json({ error: console.error || 'Erro ao apagar avaliação.' });
     }
   });
 
   // ============================================================================
-  // ============================================================================
   // OFFICIAL MENU BOARD LINES (FLYER ITEMS) CRUD API (PostgreSQL)
   // ============================================================================
+  
   app.get('/api/flyer-items', async (_req, res) => {
     try {
       const items = await listFlyerItems();
       res.json(items);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao carregar linhas dos encartes.' });
+      res.status(500).json({ error: console.error || 'Erro ao carregar linhas dos encartes.' });
     }
   });
 
@@ -315,7 +349,7 @@ export function createApp() {
 
       res.status(201).json(created);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao adicionar linha no encarte.' });
+      res.status(500).json({ error: console.error || 'Erro ao adicionar linha no encarte.' });
     }
   });
 
@@ -346,7 +380,7 @@ export function createApp() {
 
       res.json(updated);
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao editar linha do encarte.' });
+      res.status(500).json({ error: console.error || 'Erro ao editar linha do encarte.' });
     }
   });
 
@@ -364,7 +398,7 @@ export function createApp() {
 
       res.json({ success: true });
     } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Erro ao remover linha do encarte.' });
+      res.status(500).json({ error: console.error || 'Erro ao remover linha do encarte.' });
     }
   });
 
