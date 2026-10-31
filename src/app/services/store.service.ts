@@ -12,9 +12,9 @@ import {
 
 const API_BASE_URL =
   window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
+  window.location.hostname === '127.0.0.1'
     ? ''
-    : 'https://SUA-URL-DO-RENDER';
+    : 'https://sweetshop-v2.onrender.com';
 
 const apiUrl = (path: string): string => `${API_BASE_URL}${path}`;
 
