@@ -31,6 +31,9 @@ async function getDb(): Promise<SqlExecutor> {
       user: process.env.PGUSER || 'postgres',
       password: process.env.PGPASSWORD || '',
       database: process.env.PGDATABASE || 'meudoce_db',
+      ssl: process.env.PGSSL === 'true'
+        ? { rejectUnauthorized: true }
+        : undefined,
       max: 10,
       connectionTimeoutMillis: 10000,
     });
